@@ -21,15 +21,15 @@ public:
         return roleAdmin;
     }
 
-    void setRoleAdmin(const std::string &roleAdmin) {
-        CR::roleAdmin = roleAdmin;
+    void setRoleAdmin(const std::string &roleAdminVal) {
+        CR::roleAdmin = roleAdminVal;
     }
 
     const std::string &getRoleToRevoke() const {
         return roleToRevoke;
     }
 
-    void setRoleToRevoke(const std::string &roleToRevoke) {
-        CR::roleToRevoke = roleToRevoke;
+    void setRoleToRevoke(const std::string &roleToRevokeVal) {
+        CR::roleToRevoke = roleToRevokeVal;
     }
 };

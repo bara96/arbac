@@ -19,15 +19,15 @@ public:
         return user;
     }
 
-    void setUser(const std::string &user) {
-        UR::user = user;
+    void setUser(const std::string &userVal) {
+        UR::user = userVal;
     }
 
     const std::string &getRole() const {
         return role;
     }
 
-    void setRole(const std::string &role) {
-        UR::role = role;
+    void setRole(const std::string &roleVal) {
+        UR::role = roleVal;
     }
 };

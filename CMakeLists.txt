@@ -3,4 +3,4 @@ project(ARBAC)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(ARBAC main.cpp Models/Policy/Policy.cpp Models/CA/CA.cpp Models/CR/CR.cpp Models/UR/UR.cpp)
+add_executable(ARBAC main.cpp Models/Policy.cpp Models/CA.cpp Models/CR.cpp Models/UR.cpp Controls/Parser.cpp Controls/Utility.cpp)

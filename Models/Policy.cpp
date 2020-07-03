@@ -5,9 +5,9 @@
 #include <utility>
 #include <vector>
 #include <xstring>
-#include "../UR/UR.cpp"
-#include "../CA/CA.cpp"
-#include "../CR/CR.cpp"
+#include "UR.cpp"
+#include "CA.cpp"
+#include "CR.cpp"
 
 class Policy {
 
@@ -17,14 +17,14 @@ private:
     std::vector<UR> userRoles;
     std::vector<CR> canRevoke;
     std::vector<CA> canAssign;
-    std::vector<std::string> goal;
+    std::string goal;
 
 public:
     Policy() = default;
 
     Policy(std::vector<std::string> roles, std::vector<std::string> users,
            std::vector<UR> userRoles, std::vector<CR> canRevoke, std::vector<CA> canAssign,
-           std::vector<std::string> goal) :
+           std::string goal) :
            roles(std::move(roles)),
            users(std::move(users)),
            userRoles(std::move(userRoles)),
@@ -36,47 +36,47 @@ public:
         return roles;
     }
 
-    void setRoles(const std::vector<std::string> &roles) {
-        Policy::roles = roles;
+    void setRoles(const std::vector<std::string> &roleVal) {
+        Policy::roles = roleVal;
     }
 
     const std::vector<std::string> &getUsers() const {
         return users;
     }
 
-    void setUsers(const std::vector<std::string> &users) {
-        Policy::users = users;
+    void setUsers(const std::vector<std::string> &usersVal) {
+        Policy::users = usersVal;
     }
 
     const std::vector<UR> &getUserRoles() const {
         return userRoles;
     }
 
-    void setUserRoles(const std::vector<UR> &userRoles) {
-        Policy::userRoles = userRoles;
+    void setUserRoles(const std::vector<UR> &userRolesVal) {
+        Policy::userRoles = userRolesVal;
     }
 
     const std::vector<CR> &getCanRevoke() const {
         return canRevoke;
     }
 
-    void setCanRevoke(const std::vector<CR> &canRevoke) {
-        Policy::canRevoke = canRevoke;
+    void setCanRevoke(const std::vector<CR> &canRevokeVal) {
+        Policy::canRevoke = canRevokeVal;
     }
 
     const std::vector<CA> &getCanAssign() const {
         return canAssign;
     }
 
-    void setCanAssign(const std::vector<CA> &canAssign) {
-        Policy::canAssign = canAssign;
+    void setCanAssign(const std::vector<CA> &canAssignVal) {
+        Policy::canAssign = canAssignVal;
     }
 
-    const std::vector<std::string> &getGoal() const {
+    const std::string &getGoal() const {
         return goal;
     }
 
-    void setGoal(const std::vector<std::string> &goal) {
-        Policy::goal = goal;
+    void setGoal(const std::string &goalVal) {
+        Policy::goal = goalVal;
     }
 };

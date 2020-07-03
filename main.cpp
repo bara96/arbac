@@ -1,7 +1,16 @@
 #include <iostream>
+#include "Controls/Parser.cpp"
+
+using namespace std;
 
 int main() {
-    int i=0;
-    std::cout << "Hello, World!" << std::endl;
+    string filename = "../policies/policy1.arbac";
+    try {
+        Parser parser = Parser(filename);
+        parser.parseFile();
+    }
+    catch (const char* msg) {
+        cerr << msg << endl;
+    }
     return 0;
 }
