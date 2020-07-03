@@ -4,6 +4,7 @@
 
 #include <utility>
 #include <xstring>
+#include <iostream>
 
 class UR {
 private:
@@ -29,5 +30,9 @@ public:
 
     void setRole(const std::string &roleVal) {
         UR::role = roleVal;
+    }
+
+    void print() {
+        std::cout << "<" << user << "," << role << ">";
     }
 };

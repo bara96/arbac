@@ -4,6 +4,7 @@
 
 #include <utility>
 #include <xstring>
+#include <iostream>
 
 class CR {
 private:
@@ -31,5 +32,9 @@ public:
 
     void setRoleToRevoke(const std::string &roleToRevokeVal) {
         CR::roleToRevoke = roleToRevokeVal;
+    }
+
+    void print() {
+        std::cout << "<" << roleAdmin << "," << roleToRevoke;
     }
 };
