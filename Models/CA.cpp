@@ -27,31 +27,31 @@ public:
         return roleAdmin;
     }
 
-    void setRoleAdmin(const std::string &roleAdmin) {
-        CA::roleAdmin = roleAdmin;
+    void setRoleAdmin(const std::string &roleAdminVal) {
+        CA::roleAdmin = roleAdminVal;
     }
 
     const std::vector<std::string> &getPositiveConditions() const {
         return positiveConditions;
     }
 
-    void setPositiveConditions(const std::vector<std::string> &positiveConditions) {
-        CA::positiveConditions = positiveConditions;
+    void setPositiveConditions(const std::vector<std::string> &positiveConditionsVal) {
+        CA::positiveConditions = positiveConditionsVal;
     }
 
     const std::vector<std::string> &getNegativeConditions() const {
         return negativeConditions;
     }
 
-    void setNegativeConditions(const std::vector<std::string> &negativeConditions) {
-        CA::negativeConditions = negativeConditions;
+    void setNegativeConditions(const std::vector<std::string> &negativeConditionsVal) {
+        CA::negativeConditions = negativeConditionsVal;
     }
 
     const std::string &getRoleToAssign() const {
         return roleToAssign;
     }
 
-    void setRoleToAssign(const std::string &roleToAssign) {
-        CA::roleToAssign = roleToAssign;
+    void setRoleToAssign(const std::string &roleToAssignVal) {
+        CA::roleToAssign = roleToAssignVal;
     }
 };
