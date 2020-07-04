@@ -20,7 +20,7 @@ string Utility::findRole(const string& toFind, vector<string> roles){
 
     std::vector<string>::iterator it = std::find(roles.begin(), roles.end(), toFind);
     if (it == roles.end())
-        return nullptr;
+        return "";
 
     int index = std::distance(roles.begin(), it);
     return roles.at(index);
