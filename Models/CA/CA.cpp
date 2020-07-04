@@ -2,7 +2,6 @@
 // Created by mbaratella on 04/07/2020.
 //
 
-#include <iostream>
 #include "CA.h"
 
 
@@ -29,23 +28,4 @@ void CA::setNegativeConditions(const std::vector<std::string> &negativeCondition
 
 void CA::setRoleToAssign(const std::string &roleToAssignVal) {
     CA::roleToAssign = roleToAssignVal;
-}
-
-void CA::print() {
-    bool i=false;
-    std::cout << "<" << roleAdmin << ",";
-    for (auto & value : positiveConditions) {
-        if(i)
-            std::cout << "&" ;
-        std::cout << std::string(value);
-        i = true;
-    }
-    i = false;
-    for (auto & value : negativeConditions) {
-        if(i)
-            std::cout << "&" ;
-        std::cout << "-" << value;
-        i = true;
-    }
-    std::cout << "," << roleToAssign << ">";
 }

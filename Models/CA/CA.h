@@ -5,7 +5,7 @@
 #ifndef ARBAC_CA_H
 #define ARBAC_CA_H
 
-
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -46,7 +46,24 @@ public:
 
     void setRoleToAssign(const std::string &roleToAssignVal);
 
-    void print();
+    void print() {
+        bool i=false;
+        std::cout << "<" << roleAdmin << ",";
+        for (auto & value : positiveConditions) {
+            if(i)
+                std::cout << "&" ;
+            std::cout << std::string(value);
+            i = true;
+        }
+        i = false;
+        for (auto & value : negativeConditions) {
+            if(i)
+                std::cout << "&" ;
+            std::cout << "-" << value;
+            i = true;
+        }
+        std::cout << "," << roleToAssign << ">";
+    }
 };
 
 
