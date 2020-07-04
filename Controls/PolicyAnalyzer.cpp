@@ -12,7 +12,7 @@ class PolicyAnalizer {
 private:
 
 template <class T>
-    vector<T> updatePolicy(vector<T>  v1, vector<string> & v2){
+    vector<T> updatePolicy(vector<T>  v1, vector<string> & v2){ //TODO change generics T with a Base class of CA, CR
         vector<T> aux;
         for (T x : v1)
             if (!empty(Utility::findRole(x.getRoleAdmin(),v2)))
@@ -20,7 +20,7 @@ template <class T>
         return aux;
     }
 
-    Policy & backwardSlicing(Policy & policy){
+    Policy & backwardSlicing(Policy & policy){  //TODO check if works
         vector<string> S;
         S.push_back(policy.getGoal());
         for (int i=0;i<100;++i){
