@@ -52,7 +52,7 @@ public:
         for (auto & value : positiveConditions) {
             if(i)
                 std::cout << "&" ;
-            std::cout << std::string(value);
+            std::cout << value;
             i = true;
         }
         i = false;
