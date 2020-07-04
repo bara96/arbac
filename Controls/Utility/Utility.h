@@ -39,6 +39,18 @@ public:
      * @return The role element if found on the given vector, else nullptr if not found
      */
     static string findRole(const string& toFind, vector<string> roles);
+
+    /***
+     * Return true if T is instance of class Base, false otherwise
+     * @tparam Base: base class
+     * @tparam T: object to compare
+     * @return
+     */
+    template<typename Base, typename T>
+    static inline bool instanceof(const T*) {
+        return is_base_of<Base, T>::value;
+    }
+
 };
 
 
