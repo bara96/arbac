@@ -31,6 +31,14 @@ public:
             cout << value << " ";
         cout << "\n";
     }
+
+    /***
+     * Find a role from a vector of roles
+     * @param toFind: role to find
+     * @param roles: vector of roles to search in
+     * @return The role element if found on the given vector, else nullptr if not found
+     */
+    static string findRole(const string& toFind, vector<string> roles);
 };
 
 

@@ -13,3 +13,15 @@ vector<string> Utility::split(const string& line, char delimiter) {
     }
     return values;
 }
+
+string Utility::findRole(const string& toFind, vector<string> roles){
+    if(roles.at(0) == "TRUE")
+        return "TRUE";
+
+    std::vector<string>::iterator it = std::find(roles.begin(), roles.end(), toFind);
+    if (it == roles.end())
+        return nullptr;
+
+    int index = std::distance(roles.begin(), it);
+    return roles.at(index);
+};
