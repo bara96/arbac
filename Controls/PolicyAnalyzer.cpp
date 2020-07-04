@@ -8,7 +8,7 @@
 
 using namespace std;
 
-class PolicyAnalizer {
+class PolicyAnalyzer {
 private:
 
 template <class T>

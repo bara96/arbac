@@ -1,8 +1,7 @@
 #include <iostream>
 #include "Controls/Parser.cpp"
+#include "Controls/PolicyAnalyzer.cpp"
 using namespace std;
-
-
 
 int main() {
     string filename = "../policies/policy1.arbac";
