@@ -1,14 +1,10 @@
 //
 // Created by mbaratella on 02/07/2020.
 //
-#include <sstream>
 #include <string>
 #include <fstream>
 #include <utility>
-#include <iostream>
-#include <regex>
 #include "../Models/Policy.cpp"
-#include "Utility.cpp"
 
 using namespace std;
 
@@ -27,7 +23,7 @@ public:
         Parser::filename = filenameVal;
     }
 
-    void parseFile() {
+    Policy parseFile() {
         ifstream arbacFile(filename);
         if(!arbacFile.good())
             throw ("Can't open File");
@@ -62,13 +58,13 @@ public:
                 if(head == "CR") {
                     Parser::removeFirstLast(&values);
                     vector<CR> crList = Parser::getCanRevoke(values);
-                    policy.setCanRevoke(crList);    //TODO implement this
+                    policy.setCanRevoke(crList);
                 }
 
                 if(head == "CA") {
                     Parser::removeFirstLast(&values);
                     vector<CA> caList = Parser::getCanAssign(values);
-                    policy.setCanAssign(caList);     //TODO implement this
+                    policy.setCanAssign(caList);
                 }
 
                 if(head == "Goal") {
@@ -77,6 +73,7 @@ public:
                 }
             }
         }
+        return policy;
     }
 
 private:
@@ -119,8 +116,9 @@ private:
             urLine.erase(urLine.begin());   //remove first char '<'
             urLine.erase(urLine.begin() + urLine.size() - 1);   //remove last char '>'
             vector<string> ua = Utility::split(urLine, ',');    //split the pair
-
-            CR cr = CR(); //create the cr
+            string roleAdmin = ua.at(0);
+            string roleToRevoke = ua.at(1);
+            CR cr = CR(roleAdmin, roleToRevoke); //create the cr
             crList.push_back(cr);
         }
         return crList;
@@ -138,7 +136,23 @@ private:
             urLine.erase(urLine.begin() + urLine.size() - 1);   //remove last char '>'
             vector<string> ua = Utility::split(urLine, ',');    //split the pair
 
-            CA ca = CA(); //create the ca
+            string roleAdmin = ua.at(0);    //set role admin
+            string conditionLine = ua.at(1);    //get condition line, ex: cond1&cond2&-cond3
+            string roleToAssign = ua.at(ua.size() - 1); //set role target
+
+            vector<string> positiveConditions;
+            vector<string> negativeConditions;
+            vector<string> conditions = Utility::split(conditionLine, '&'); //split conditions
+            for (auto & condition : conditions) {
+                if(condition.at(0) == '-'){
+                    condition.erase(0, 1);  //remove char '-'
+                    negativeConditions.push_back(condition);
+                }
+                else
+                    positiveConditions.push_back(condition);
+            }
+
+            CA ca = CA(roleAdmin, positiveConditions, negativeConditions, roleToAssign);    //create the ca
             caList.push_back(ca);
         }
         return caList;

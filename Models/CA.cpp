@@ -5,6 +5,7 @@
 #include <utility>
 #include <xstring>
 #include <vector>
+#include <iostream>
 
 class CA {
 private:
@@ -53,5 +54,20 @@ public:
 
     void setRoleToAssign(const std::string &roleToAssignVal) {
         CA::roleToAssign = roleToAssignVal;
+    }
+
+    void print() {
+        bool i=false;
+        std::cout << "<" << roleAdmin << ",";
+        for (auto & value : positiveConditions) {
+            std::cout << value << "&";
+        }
+        for (auto & value : negativeConditions) {
+            if(i)
+                std::cout << "&" ;
+            std::cout << "-" << value;
+           i = true;
+        }
+        std::cout << "," << roleToAssign << ">";
     }
 };

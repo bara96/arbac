@@ -33,6 +33,7 @@ public:
     static void printVector(const vector<string>& vector) {
         for (auto & value : vector)
             cout << value << " ";
+        cout << "\n";
     }
 
 };

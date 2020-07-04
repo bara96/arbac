@@ -5,9 +5,11 @@ using namespace std;
 
 int main() {
     string filename = "../policies/policy1.arbac";
+    Policy policy;
     try {
         Parser parser = Parser(filename);
-        parser.parseFile();
+        policy = parser.parseFile();
+        policy.print();
     }
     catch (const char* msg) {
         cerr << msg << endl;

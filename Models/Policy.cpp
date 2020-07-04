@@ -8,6 +8,7 @@
 #include "UR.cpp"
 #include "CA.cpp"
 #include "CR.cpp"
+#include "../Controls/Utility.cpp"
 
 class Policy {
 
@@ -78,5 +79,30 @@ public:
 
     void setGoal(const std::string &goalVal) {
         Policy::goal = goalVal;
+    }
+
+    void print() {
+        std::cout << "Roles: " << "\n";
+        Utility::printVector(roles);
+        std::cout << "Users: " << "\n";
+        Utility::printVector(users);
+        std::cout << "UR: " << "\n";
+        for (auto & value : userRoles) {
+            value.print();
+            cout << " ";
+        }
+        std::cout << "\n";
+        std::cout << "CR: " << "\n";
+        for (auto & value : canRevoke) {
+            value.print();
+            cout << " ";
+        }
+        std::cout << "\n";
+        std::cout << "CA: " << "\n";
+        for (auto & value : canAssign) {
+            value.print();
+            cout << " ";
+        }
+        std::cout << "\n";
     }
 };

@@ -1,0 +1,7 @@
+-BARA
+
+-ANDI
+
+-COMMON TASKS:
+    1) analizzare l'algoritmo backward slicing (capirlo)
+    2) implementare il backward slicing
