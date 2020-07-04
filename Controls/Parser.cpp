@@ -4,7 +4,7 @@
 #include <string>
 #include <fstream>
 #include <utility>
-#include "../Models/Policy.cpp"
+#include "../Models/Policy/Policy.h"
 
 using namespace std;
 

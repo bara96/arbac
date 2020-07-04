@@ -1,6 +1,9 @@
 //
-// Created by mbaratella on 02/07/2020.
+// Created by mbaratella on 04/07/2020.
 //
+
+#ifndef ARBAC_UR_H
+#define ARBAC_UR_H
 
 #include <utility>
 #include <xstring>
@@ -12,27 +15,26 @@ private:
     std::string role;
 
 public:
-    UR() = default;
+    UR();
 
-    UR(std::string user, std::string role) : user(std::move(user)), role(std::move(role)) {}
+    UR(std::string user, std::string role);
 
     const std::string &getUser() const {
         return user;
     }
 
-    void setUser(const std::string &userVal) {
-        UR::user = userVal;
-    }
+    void setUser(const std::string &userVal);
 
     const std::string &getRole() const {
         return role;
     }
 
-    void setRole(const std::string &roleVal) {
-        UR::role = roleVal;
-    }
+    void setRole(const std::string &roleVal);
 
     void print() {
         std::cout << "<" << user << "," << role << ">";
     }
 };
+
+
+#endif //ARBAC_UR_H
