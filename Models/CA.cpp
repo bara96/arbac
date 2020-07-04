@@ -19,10 +19,17 @@ public:
 
     CA(std::string roleAdmin, std::vector<std::string> positiveConditions,
        std::vector<std::string> negativeConditions, std::string roleToAssign) :
-       roleAdmin(std::move(roleAdmin)),
-       positiveConditions(std::move(positiveConditions)),
-       negativeConditions(std::move(negativeConditions)),
-       roleToAssign(std::move(roleToAssign)) {}
+            roleAdmin(std::move(roleAdmin)),
+            positiveConditions(std::move(positiveConditions)),
+            negativeConditions(std::move(negativeConditions)),
+            roleToAssign(std::move(roleToAssign)) {}
+
+    CA(const CA &ca) { // Copy constructor .
+        roleAdmin = ca.roleAdmin;
+        positiveConditions = ca.positiveConditions;
+        roleToAssign = ca.roleToAssign;
+        negativeConditions = std::vector<std::string>();
+    }
 
     const std::string &getRoleAdmin() const {
         return roleAdmin;
