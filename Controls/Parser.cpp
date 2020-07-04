@@ -144,6 +144,7 @@ private:
             vector<string> negativeConditions;
             vector<string> conditions = Utility::split(conditionLine, '&'); //split conditions
             for (auto & condition : conditions) {
+                condition = std::string(condition);
                 if(condition.at(0) == '-'){
                     condition.erase(0, 1);  //remove char '-'
                     negativeConditions.push_back(condition);
