@@ -5,8 +5,8 @@
 #include <utility>
 #include <vector>
 #include <xstring>
+#include "CA/CA.h"
 #include "UR.cpp"
-#include "CA.cpp"
 #include "CR.cpp"
 #include "../Controls/Utility.cpp"
 
