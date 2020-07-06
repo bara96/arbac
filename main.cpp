@@ -9,8 +9,8 @@ int main() {
     try {
         Parser parser = Parser(filename);
         policy = parser.parseFile();
-        Policy newPolicy = PolicyAnalyzer::backwardSlicing(policy);
-        newPolicy.print();
+        Policy policy1 = PolicyAnalyzer::backwardSlicing(policy);
+        Policy policy2 = PolicyAnalyzer::approximatedAnalyses(policy);
     }
     catch (const char* msg) {
         cerr << msg << endl;
