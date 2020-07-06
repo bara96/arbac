@@ -2,9 +2,9 @@
 // Created by mbaratella on 04/07/2020.
 //
 
-
 #include <utility>
-#include <vector> //std::vector
+#include <vector>
+#include <map>
 #include "../Models/Policy/Policy.h"
 
 using namespace std;
@@ -67,6 +67,24 @@ public:
         }
         reducedPolicy.setCanAssign(reducedCa);
         return reducedPolicy;
+    }
+
+    /***
+     * Build the initial set of User-Role assignments, for each User will assign a vector of Roles
+     * @param policy : the policy where to build the set
+     * @return
+     */
+    static map<string, vector<string>> buildInitialRoles(const Policy& policy) {
+        map<string, vector<string>> roleSet;
+        for(const string& user: policy.getUsers()) {
+            vector<string> set;
+            roleSet.insert(std::pair<string,vector<string>>(user,set));
+        }
+        for(const UR& ur: policy.getUserRoles()) {
+            auto it = roleSet.find(ur.getUser());
+            it->second.push_back(ur.getRole());
+        }
+        return roleSet;
     }
 
 };
