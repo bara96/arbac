@@ -9,6 +9,7 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
+#include <map>
 
 using namespace std;
 
@@ -20,14 +21,14 @@ public:
      * @param delimiter: Specifies the character to use for splitting the string
      * @return An Array, containing the splitted values
      */
-    static vector<string> split(const string& line, char delimiter);
+    static vector<string> split(const string &line, char delimiter);
 
     /***
      * Print an array of string
      * @param vector
      */
-    static void printVector(const vector<string>& vector) {
-        for (auto & value : vector)
+    static void printVector(const vector<string> &vector) {
+        for (auto &value : vector)
             cout << value << " ";
         cout << "\n";
     }
@@ -38,7 +39,7 @@ public:
      * @param roles: vector of roles to search in
      * @return The role element if found on the given vector, else nullptr if not found
      */
-    static string findRole(const string& toFind, vector<string> roles);
+    static string findRole(const string &toFind, vector<string> roles);
 
     /***
      * Return true if T is instance of class Base, false otherwise
@@ -47,7 +48,7 @@ public:
      * @return
      */
     template<typename Base, typename T>
-    static inline bool instanceof(const T*) {
+    static inline bool instanceof(const T *) {
         return is_base_of<Base, T>::value;
     }
 
@@ -57,22 +58,23 @@ public:
      * @param role
      * @return
      */
-    static vector<string> findUsersWithRole(const string& role, const map<string, vector<string>>& roleSet);
+    static vector<string> findUsersWithRole(const string &role, const map<string, vector<string>> &roleSet);
 
     /***
      * Print a set of User-Role assignments
      * @param roleSet
      */
-    static void printRoleSet(const map<string, vector<string>>& roleSet);
+    static void printRoleSet(const map<string, vector<string>> &roleSet);
+
     /***
      * Check for positive conditions for the string
      * @param condRules
      * @param roles
      * @return
      */
-    static bool every(vector<string> & condRules,vector<string> roles ){
+    static bool every(vector<string> &condRules, vector<string> roles) {
         for (string condRule: condRules)
-            if (empty(findRole(condRule,roles)))
+            if (empty(findRole(condRule, roles)))
                 return false;
         return true;
     }
@@ -83,9 +85,9 @@ public:
      * @param roles
      * @return
      */
-    static bool some(vector<string>  & condRules,vector<string> roles ){
+    static bool some(vector<string> &condRules, vector<string> roles) {
         for (string condRule: condRules)
-            if (empty(findRole(condRule,roles)))
+            if (empty(findRole(condRule, roles)))
                 return true;
         return false;
     }
