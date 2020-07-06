@@ -8,8 +8,9 @@
 #include <utility>
 #include <xstring>
 #include <iostream>
+#include "../Rule/Rule.h"
 
-class CR {
+class CR : Rule {
 private:
     std::string roleAdmin;
     std::string roleToRevoke;
@@ -19,20 +20,20 @@ public:
 
     CR(std::string roleAdmin, std::string roleToRevoke);
 
-    const std::string &getRoleAdmin() const {
+    const std::string &getRoleAdmin() const override {
         return roleAdmin;
     }
 
-    void setRoleAdmin(const std::string &roleAdminVal);
+    void setRoleAdmin(const std::string &roleAdminVal) override;
 
-    const std::string &getRoleToRevoke() const {
+    const std::string &getRoleTarget() const override {
         return roleToRevoke;
     }
 
-    void setRoleToRevoke(const std::string &roleToRevokeVal);
+    void setRoleTarget(const std::string &roleToRevokeVal) override;
 
     void print() {
-        std::cout << "<" << roleAdmin << "," << roleToRevoke;
+        std::cout << "<" << roleAdmin << "," << roleToRevoke << ">";
     }
 };
 
