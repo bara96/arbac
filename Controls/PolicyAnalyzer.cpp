@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 #include <map>
+#include <string>
 #include "../Models/Policy/Policy.h"
 
 using namespace std;
@@ -87,4 +88,48 @@ public:
         return roleSet;
     }
 
+
+    static vector<string> extract_keys(map<string, vector<string>> const & input_map) {
+        vector<string> keys;
+        for (auto const& element : input_map) {
+            keys.push_back(element.first);
+        }
+        return keys;
+    }
+
+
+    /***
+     * Try all the possible combinations
+     * @param policy : the source Policy
+     * @return
+     */
+    static bool bruteForce(map<string,vector<string>> & initialRoles,Policy & policy){
+        /*
+        map<string,vector<string>> tried = initialRoles;
+        bool found = false;
+        while (! found){
+            map<string, vector<string>> newTries;
+            for (const auto& rolesSet: tried)
+                for (const auto& assign: policy.getCanAssign())
+                {
+                    string admins = Utility::findUsersWithRole(assign.getRoleAdmin(), rolesSet);
+                    if (size(admins)>0){
+                    for(string user: extract_keys(initialRoles)){
+                        vector<string> targetUserRoles=rolesSet[user];
+                        bool positiveConditionsCheck = false;
+                        for (auto condRule: assign.getPositiveConditions())
+                            if()
+                    }
+
+                    }
+
+
+                }
+
+
+
+            found = true;
+        }
+         */
+    }
 };
