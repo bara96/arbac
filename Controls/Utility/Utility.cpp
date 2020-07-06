@@ -45,3 +45,17 @@ void Utility::printRoleSet(const map<string, vector<string>>& roleSet) {
         cout << "\n";
     }
 }
+
+bool Utility::everyCondition(vector<string> &condRules, const vector<string>& roles) {
+    for (const string& condRule: condRules)
+        if (empty(findRole(condRule, roles)))
+            return false;
+    return true;
+}
+
+bool Utility::someCondition(vector<string> &condRules, const vector<string>& roles) {
+    for (const string& condRule: condRules)
+        if (empty(findRole(condRule, roles)))
+            return true;
+    return false;
+}

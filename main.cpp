@@ -16,7 +16,7 @@ int main() {
     try {
         Parser parser = Parser(filename);
         policy = parser.parseFile();
-        //examples(policy);
+        examples(policy);
     }
     catch (const char* msg) {
         cerr << msg << endl;
