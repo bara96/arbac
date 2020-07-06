@@ -51,6 +51,44 @@ public:
         return is_base_of<Base, T>::value;
     }
 
+    /***
+     * Return a vector of users with the given role
+     * @param roleSet
+     * @param role
+     * @return
+     */
+    static vector<string> findUsersWithRole(const string& role, const map<string, vector<string>>& roleSet);
+
+    /***
+     * Print a set of User-Role assignments
+     * @param roleSet
+     */
+    static void printRoleSet(const map<string, vector<string>>& roleSet);
+    /***
+     * Check for positive conditions for the string
+     * @param condRules
+     * @param roles
+     * @return
+     */
+    static bool every(vector<string> & condRules,vector<string> roles ){
+        for (string condRule: condRules)
+            if (empty(findRole(condRule,roles)))
+                return false;
+        return true;
+    }
+
+    /***
+     * Check for negative conditions
+     * @param condRules
+     * @param roles
+     * @return
+     */
+    static bool some(vector<string>  & condRules,vector<string> roles ){
+        for (string condRule: condRules)
+            if (empty(findRole(condRule,roles)))
+                return true;
+        return false;
+    }
 };
 
 

@@ -4,7 +4,7 @@
 
 
 #include <utility>
-#include <vector> //std::vector
+#include <string>
 #include "../Models/Policy/Policy.h"
 
 using namespace std;
@@ -69,4 +69,64 @@ public:
         return reducedPolicy;
     }
 
+    /***
+     * Build the initial set of User-Role assignments, for each User will assign a vector of Roles
+     * @param policy : the policy where to build the set
+     * @return
+     */
+    static map<string, vector<string>> buildInitialRoles(const Policy& policy) {
+        map<string, vector<string>> roleSet;
+        for(const string& user: policy.getUsers()) {
+            vector<string> set;
+            roleSet.insert(std::pair<string,vector<string>>(user,set));
+        }
+        for(const UR& ur: policy.getUserRoles()) {
+            auto it = roleSet.find(ur.getUser());
+            it->second.push_back(ur.getRole());
+        }
+        return roleSet;
+    }
+
+
+    vector<string> extract_keys(map<string, vector<string>> const & input_map) {
+        vector<string> keys;
+        for (auto const& element : input_map) {
+            keys.push_back(element.first);
+        }
+        return keys;
+    }
+
+
+    /***
+     * Try all the possible combinations
+     * @param policy : the source Policy
+     * @return
+     */
+    static bool bruteForce(map<string,vector<string>> & initialRoles,Policy & policy){
+        map<string,vector<string>> tried = initialRoles;
+        bool found = false;
+        while (! found){
+            map<string,vector<string>> newTries;
+            for (auto rolesSet:tried)
+                for (auto assign: policy.getCanAssign())
+                {
+                    string admins= findUsersWithRole(rolesSet,assign.getRoleAdmin());
+                    if (size(admins)>0){
+                    for(string user: extract_keys(initialRoles)){
+                        vector<string> targetUserRoles=rolesSet[user];
+                        bool positiveConditionsCheck = false;
+                        for (auto condRule: assign.getPositiveConditions())
+                            if()
+                    }
+
+                    }
+
+
+                }
+
+
+
+            found = true;
+        }
+    }
 };
