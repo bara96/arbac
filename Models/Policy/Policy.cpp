@@ -16,7 +16,6 @@ canRevoke(std::move(canRevoke)),
 canAssign(std::move(canAssign)),
 goal(std::move(goal)) {}
 
-
 void Policy::setRoles(const std::vector<std::string> &roleVal) {
     Policy::roles = roleVal;
 }
