@@ -18,7 +18,7 @@ string Utility::findRole(const string& toFind, vector<string> roles){
     if(roles.at(0) == "TRUE")
         return "TRUE";
 
-    std::vector<string>::iterator it = std::find(roles.begin(), roles.end(), toFind);
+    auto it = std::find(roles.begin(), roles.end(), toFind);
     if (it == roles.end())
         return "";
 

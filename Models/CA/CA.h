@@ -50,12 +50,17 @@ public:
     void print() {
         bool i=false;
         std::cout << "<" << roleAdmin << ",";
+
         for (auto & value : positiveConditions) {
             if(i)
                 std::cout << "&" ;
             std::cout << value;
             i = true;
         }
+
+        if(!positiveConditions.empty() && !negativeConditions.empty())
+            std::cout << "&";
+
         i = false;
         for (auto & value : negativeConditions) {
             if(i)
@@ -63,6 +68,7 @@ public:
             std::cout << "-" << value;
             i = true;
         }
+
         std::cout << "," << roleToAssign << ">";
     }
 };
