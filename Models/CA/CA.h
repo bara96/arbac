@@ -8,8 +8,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "../Rule/Rule.h"
 
-class CA {
+class CA : Rule {
 private:
     std::string roleAdmin;
     std::vector<std::string> positiveConditions;
@@ -22,11 +23,11 @@ public:
     CA(std::string roleAdmin, std::vector<std::string> positiveConditions,
        std::vector<std::string> negativeConditions, std::string roleToAssign);
 
-    const std::string &getRoleAdmin() const {
+    const std::string &getRoleAdmin() const override {
         return roleAdmin;
     }
 
-    void setRoleAdmin(const std::string &roleAdminVal);
+    void setRoleAdmin(const std::string &roleAdminVal) override;
 
     const std::vector<std::string> &getPositiveConditions() const {
         return positiveConditions;
@@ -40,11 +41,11 @@ public:
 
     void setNegativeConditions(const std::vector<std::string> &negativeConditionsVal);
 
-    const std::string &getRoleToAssign() const {
+    const std::string &getRoleTarget() const override {
         return roleToAssign;
     }
 
-    void setRoleToAssign(const std::string &roleToAssignVal);
+    void setRoleTarget(const std::string &roleToAssignVal) override;
 
     void print() {
         bool i=false;
