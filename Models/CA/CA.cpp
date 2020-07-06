@@ -4,6 +4,8 @@
 
 #include "CA.h"
 
+#include <utility>
+
 
 CA::CA() = default;
 
@@ -26,6 +28,6 @@ void CA::setNegativeConditions(const std::vector<std::string> &negativeCondition
     CA::negativeConditions = negativeConditionsVal;
 }
 
-void CA::setRoleToAssign(const std::string &roleToAssignVal) {
+void CA::setRoleTarget(const std::string &roleToAssignVal) {
     CA::roleToAssign = roleToAssignVal;
 }

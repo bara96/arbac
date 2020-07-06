@@ -14,6 +14,6 @@ void CR::setRoleAdmin(const std::string &roleAdminVal) {
     CR::roleAdmin = roleAdminVal;
 }
 
-void CR::setRoleToRevoke(const std::string &roleToRevokeVal) {
+void CR::setRoleTarget(const std::string &roleToRevokeVal) {
     CR::roleToRevoke = roleToRevokeVal;
 }
