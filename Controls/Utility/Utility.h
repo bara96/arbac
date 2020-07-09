@@ -72,7 +72,7 @@ public:
      * @param roles
      * @return
      */
-    static bool everyCondition(vector<string> &condRules, const vector<string>& roles);
+    static bool everyCondition(const vector<string> &condRules, const vector<string>& roles);
 
     /***
      * Check for negative conditions
@@ -80,7 +80,27 @@ public:
      * @param roles
      * @return
      */
-    static bool someCondition(vector<string> &condRules, const vector<string>& roles);
+    static bool someCondition(const vector<string> &condRules, const vector<string>& roles);
+
+    /***
+     * Assign an user-role pair to the roleSet map
+     * @param user : user to assign
+     * @param role : role to assign
+     * @param roleSet : origin roleSet
+     * @return
+     */
+    static map<string,vector<string>> assignUserRole(const string& user, const string& role, map<string, vector<string>> &roleSet);
+
+    /***
+     * Revoke an user-role pair to the roleSet map
+     * @param user : user to assign
+     * @param role : role to assign
+     * @param roleSet : origin roleSet
+     * @return
+     */
+    static map<string,vector<string>> revokeUserRole(const string& user, const string& role, map<string, vector<string>> &roleSet);
+
+    static bool isRoleSetEmpty(const map<string, vector<string>> &roleSet);
 };
 
 
