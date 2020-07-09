@@ -12,7 +12,7 @@ using namespace std;
 
 class PolicyAnalyzer {
 
-public:
+private:
     /***
      * Filter a Rule set with a second one following the rule:
      * S[i] = S[i-1] U { Rp U Rn U roleAdmin | (roleAdmin, Rp, Rn, roleTarget) ∈ CA ∧ roleTarget ∈ S[i-1] }
@@ -54,12 +54,12 @@ public:
     }
 
     /***
-     * Return a reduced set of the Policy removing the negative conditions on CA
+     * Create a reduced set of the Policy removing the negative conditions on CA, return true if analysis succeed, false otherwise
      * @param policy : the source Policy
-     * @return
+     * @return : the bruteForce result on approximated analysis
      */
-    static Policy approximatedAnalyses(Policy policy) {
-        Policy reducedPolicy = Policy(std::move(policy));
+    static bool approximatedAnalysis(const Policy& policy) {
+        Policy reducedPolicy = Policy(policy);
         vector<CA> reducedCa;
         for(CA ca: reducedPolicy.getCanAssign()) {
             vector<string> negativeConditions;
@@ -67,7 +67,9 @@ public:
             reducedCa.push_back(ca);
         }
         reducedPolicy.setCanAssign(reducedCa);
-        return reducedPolicy;
+
+        map<string, vector<string>> initRoles = buildInitialRoles(policy);
+        return bruteForce(initRoles, reducedPolicy);
     }
 
     /***
@@ -93,7 +95,7 @@ public:
      * @param policy : the source Policy
      * @return
      */
-    static bool bruteForce(map<string,vector<string>>& initialRoles, Policy& policy){
+    static bool bruteForce(map<string,vector<string>>& initialRoles, const Policy& policy){
         vector<map<string,vector<string>>> tried;
         tried.push_back(initialRoles);
         bool found = false;
@@ -141,5 +143,19 @@ public:
             found = true;
         }
         return found;
+    }
+
+public:
+    static bool analyzePolicy(Policy& policy) {
+        //first step: backward slicing
+        PolicyAnalyzer::backwardSlicing(policy);
+
+        //second step: approximated analysis
+        if(!PolicyAnalyzer::approximatedAnalysis(policy))
+            return false;
+
+        //third step: brute force
+        map<string, vector<string>> initRoles = buildInitialRoles(policy);
+        return bruteForce(initRoles, policy);
     }
 };
