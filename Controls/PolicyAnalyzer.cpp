@@ -88,48 +88,58 @@ public:
         return roleSet;
     }
 
-
-    static vector<string> extract_keys(map<string, vector<string>> const & input_map) {
-        vector<string> keys;
-        for (auto const& element : input_map) {
-            keys.push_back(element.first);
-        }
-        return keys;
-    }
-
-
     /***
      * Try all the possible combinations
      * @param policy : the source Policy
      * @return
      */
-    static bool bruteForce(map<string,vector<string>> & initialRoles,Policy & policy){
-        /*
-        map<string,vector<string>> tried = initialRoles;
+    static bool bruteForce(map<string,vector<string>>& initialRoles, Policy& policy){
+        vector<map<string,vector<string>>> tried;
+        tried.push_back(initialRoles);
         bool found = false;
-        while (! found){
-            map<string, vector<string>> newTries;
-            for (const auto& rolesSet: tried)
-                for (const auto& assign: policy.getCanAssign())
-                {
-                    string admins = Utility::findUsersWithRole(assign.getRoleAdmin(), rolesSet);
-                    if (size(admins)>0){
-                    for(string user: extract_keys(initialRoles)){
-                        vector<string> targetUserRoles=rolesSet[user];
-                        bool positiveConditionsCheck = false;
-                        for (auto condRule: assign.getPositiveConditions())
-                            if()
+
+        while (!found){
+            vector<map<string, vector<string>>> newTries;
+            for (map<string,vector<string>>& roleSet: tried) {
+                //Check Can Assign Rules
+                for (const CA& assign: policy.getCanAssign()) {
+                    vector<string> admins = Utility::findUsersWithRole(assign.getRoleAdmin(), roleSet);
+                    if (!empty(admins)) {
+                        for (const auto &it: roleSet) {
+                            vector<string> targetUserRoles = it.second;
+
+                            bool positiveConditionsCheck = Utility::everyCondition(assign.getPositiveConditions(), targetUserRoles);
+                            if (positiveConditionsCheck) {
+                                bool negativeConditionsCheck = Utility::someCondition(assign.getNegativeConditions(), targetUserRoles);
+                                if (!negativeConditionsCheck) {
+                                    map<string, vector<string>> assigment = Utility::assignUserRole(it.first, assign.getRoleTarget(), roleSet);
+                                    if (!empty(assigment)) {
+                                        newTries.push_back(assigment);
+                                    }
+                                }
+                            }
+                        }
                     }
-
-                    }
-
-
                 }
 
+                //Check Can Revoke Rules
+                for (const CR &revoke: policy.getCanRevoke()) {
+                    vector<string> admins = Utility::findUsersWithRole(revoke.getRoleAdmin(), roleSet);
+                    if (!empty(admins)) {
+                        for (const auto &it: roleSet) {
+                            map<string, vector<string>> revocation = Utility::revokeUserRole(it.first, revoke.getRoleTarget(), roleSet);
+                            if (!empty(revocation) && !Utility::isRoleSetEmpty(revocation)) {
+                                newTries.push_back(revocation);
+                            }
+                        }
+                    }
+                }
+            }
 
+            // Check for exit condition
 
             found = true;
         }
-         */
+        return found;
     }
 };
