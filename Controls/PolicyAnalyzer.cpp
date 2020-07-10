@@ -91,17 +91,34 @@ private:
     }
 
     /***
+     * Check if some user has reached the role target into the role set
+     * @param roleSetAssignments
+     * @param target
+     * @return return true if target role is found, false otherwise
+     */
+    static bool targetReached(const vector<map<string,vector<string>>>& roleSetAssignments, const string& target) {
+        for(const map<string,vector<string>>& roleSet: roleSetAssignments){
+            if(!empty(Utility::findUsersWithRole(target, roleSet)))
+                return true;
+        }
+        return false;
+    }
+
+    /***
      * Try all the possible combinations
      * @param policy : the source Policy
      * @return
      */
-    static bool bruteForce(map<string,vector<string>>& initialRoles, const Policy& policy){
-        vector<map<string,vector<string>>> tried;
+    static bool bruteForce(map<string,vector<string>>& initialRoles, const Policy& policy, bool showLogs = false){
+        vector<map<string,vector<string>>> tried;   //set of all the tries
         tried.push_back(initialRoles);
         bool found = false;
+        int i = 1;
 
         while (!found){
-            vector<map<string, vector<string>>> newTries;
+            if(showLogs)
+                cout << "- Iteration step n'" << i << endl;
+            vector<map<string, vector<string>>> newTries;      //set of the current tries
             for (map<string,vector<string>>& roleSet: tried) {
                 //Check Can Assign Rules
                 for (const CA& assign: policy.getCanAssign()) {
@@ -109,12 +126,11 @@ private:
                     if (!empty(admins)) {
                         for (const auto &it: roleSet) {
                             vector<string> targetUserRoles = it.second;
-
-                            bool positiveConditionsCheck = Utility::everyCondition(assign.getPositiveConditions(), targetUserRoles);
+                            bool positiveConditionsCheck = Utility::everyCondition(assign.getPositiveConditions(), targetUserRoles);    //check if it respect positive conditions
                             if (positiveConditionsCheck) {
-                                bool negativeConditionsCheck = Utility::someCondition(assign.getNegativeConditions(), targetUserRoles);
+                                bool negativeConditionsCheck = Utility::someCondition(assign.getNegativeConditions(), targetUserRoles);     //check if it respect negative conditions
                                 if (!negativeConditionsCheck) {
-                                    map<string, vector<string>> assigment = Utility::assignUserRole(it.first, assign.getRoleTarget(), roleSet);
+                                    map<string, vector<string>> assigment = Utility::assignUserRole(it.first, assign.getRoleTarget(), roleSet);     //do a role assignment
                                     if (!empty(assigment)) {
                                         newTries.push_back(assigment);
                                     }
@@ -129,7 +145,7 @@ private:
                     vector<string> admins = Utility::findUsersWithRole(revoke.getRoleAdmin(), roleSet);
                     if (!empty(admins)) {
                         for (const auto &it: roleSet) {
-                            map<string, vector<string>> revocation = Utility::revokeUserRole(it.first, revoke.getRoleTarget(), roleSet);
+                            map<string, vector<string>> revocation = Utility::revokeUserRole(it.first, revoke.getRoleTarget(), roleSet);    //do a role revocation
                             if (!empty(revocation) && !Utility::isRoleSetEmpty(revocation)) {
                                 newTries.push_back(revocation);
                             }
@@ -138,24 +154,53 @@ private:
                 }
             }
 
-            // Check for exit condition
+            if(targetReached(newTries, policy.getGoal())){
+                found = true;
+                if(showLogs)
+                    cout << "- Target reached at iteration step n'" << i << endl;
+            }
+            else {
+                if(showLogs)
+                    cout << "- Target not reached, proceding to next iteration step" << endl;
+            }
 
-            found = true;
+            tried.insert(tried.end(), newTries.begin(), newTries.end());    //add mew tries to the tried set
+            ++i;
         }
         return found;
     }
 
 public:
-    static bool analyzePolicy(Policy& policy) {
+    static bool analyzePolicy(Policy& policy, bool showLogs = false) {
         //first step: backward slicing
+        if(showLogs)
+            cout << "ANALYZER BEGIN" << endl;
+        if(showLogs)
+            cout << "1) backward slicing" << endl;
         PolicyAnalyzer::backwardSlicing(policy);
 
         //second step: approximated analysis
-        if(!PolicyAnalyzer::approximatedAnalysis(policy))
+        if(showLogs)
+            cout << "2) approximated analysis" << endl;
+        if(!PolicyAnalyzer::approximatedAnalysis(policy)) {
+            if(showLogs) {
+                cout << "- approximated analysis succeeded" << endl;
+                cout << "ANALYZER END" << endl;
+            }
             return false;
+        }
+        else {
+            if(showLogs)
+                cout << "- approximated analysis failed" << endl;
+        }
 
         //third step: brute force
+        if(showLogs)
+            cout << "3) Evaluation" << endl;
         map<string, vector<string>> initRoles = buildInitialRoles(policy);
-        return bruteForce(initRoles, policy);
+        bool result = bruteForce(initRoles, policy, showLogs);
+        if(showLogs)
+            cout << "ANALYZER END" << endl;
+        return result;
     }
 };

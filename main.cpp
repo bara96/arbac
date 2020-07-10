@@ -4,16 +4,17 @@
 using namespace std;
 
 int main() {
-    string filename = "../policies/policy1.arbac";
+    bool showLogs = true;
+    string filename = "../policies/policy2.arbac";
     Policy policy;
     try {
-        Parser parser = Parser(filename);
+        Parser parser = Parser(filename, showLogs);
         policy = parser.parseFile();
 
-        if(PolicyAnalyzer::analyzePolicy(policy))
-            cout << "true" << endl;
+        if(PolicyAnalyzer::analyzePolicy(policy, showLogs))
+            cout << endl << "RESULT: Reachable" << endl;
         else
-            cout << "false" << endl;
+            cout << endl << "RESULT: Not Reachable" << endl;
     }
     catch (const char* msg) {
         cerr << msg << endl;
