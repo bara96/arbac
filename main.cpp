@@ -5,13 +5,14 @@ using namespace std;
 
 int main() {
     bool showLogs = true;
-    string filename = "../policies/policy2.arbac";
+    string filename = "../policies/policy1.arbac";
     Policy policy;
     try {
         Parser parser = Parser(filename, showLogs);
         policy = parser.parseFile();
 
-        if(PolicyAnalyzer::analyzePolicy(policy, showLogs))
+        PolicyAnalyzer analyzer(policy, showLogs);
+        if(analyzer.analyzePolicy())
             cout << endl << "RESULT: Reachable" << endl;
         else
             cout << endl << "RESULT: Not Reachable" << endl;

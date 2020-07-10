@@ -13,6 +13,29 @@ using namespace std;
 class PolicyAnalyzer {
 
 private:
+    Policy sourcePolicy;
+    bool showLogs = false;
+
+public:
+    explicit PolicyAnalyzer(Policy policy, bool showLogs = false) : sourcePolicy(std::move(policy)), showLogs(showLogs) {}
+
+    bool isShowLogs() const {
+        return showLogs;
+    }
+
+    void setShowLogs(bool showLogsVal) {
+        PolicyAnalyzer::showLogs = showLogsVal;
+    }
+
+    const Policy &getPolicy() const {
+        return sourcePolicy;
+    }
+
+    void setPolicy(const Policy &policyVal) {
+        PolicyAnalyzer::sourcePolicy = policyVal;
+    }
+
+private:
     /***
      * Filter a Rule set with a second one following the rule:
      * S[i] = S[i-1] U { Rp U Rn U roleAdmin | (roleAdmin, Rp, Rn, roleTarget) ∈ CA ∧ roleTarget ∈ S[i-1] }
@@ -35,7 +58,7 @@ private:
      * @param policy
      * @return : the policy with optimization
      */
-    static Policy & backwardSlicing(Policy & policy){
+    static Policy & backwardSlicing(Policy& policy){
         vector<string> S;
         S.push_back(policy.getGoal());
         for (int i=0;i<100;++i){
@@ -58,8 +81,8 @@ private:
      * @param policy : the source Policy
      * @return : the bruteForce result on approximated analysis
      */
-    static bool approximatedAnalysis(const Policy& policy) {
-        Policy reducedPolicy = Policy(policy);
+    bool approximatedAnalysis(const Policy& policy) {
+        Policy reducedPolicy = Policy(getPolicy());
         vector<CA> reducedCa;
         for(CA ca: reducedPolicy.getCanAssign()) {
             vector<string> negativeConditions;
@@ -68,7 +91,7 @@ private:
         }
         reducedPolicy.setCanAssign(reducedCa);
 
-        map<string, vector<string>> initRoles = buildInitialRoles(policy);
+        map<string, vector<string>> initRoles = buildInitialRoles(getPolicy());
         return bruteForce(initRoles, reducedPolicy);
     }
 
@@ -109,14 +132,14 @@ private:
      * @param policy : the source Policy
      * @return
      */
-    static bool bruteForce(map<string,vector<string>>& initialRoles, const Policy& policy, bool showLogs = false){
+    bool bruteForce(map<string,vector<string>>& initialRoles, const Policy& policy) const{
         vector<map<string,vector<string>>> tried;   //set of all the tries
         tried.push_back(initialRoles);
         bool found = false;
         int i = 1;
 
         while (!found){
-            if(showLogs)
+            if(isShowLogs())
                 cout << "- Iteration step n'" << i << endl;
             vector<map<string, vector<string>>> newTries;      //set of the current tries
             for (map<string,vector<string>>& roleSet: tried) {
@@ -156,11 +179,11 @@ private:
 
             if(targetReached(newTries, policy.getGoal())){
                 found = true;
-                if(showLogs)
+                if(isShowLogs())
                     cout << "- Target reached at iteration step n'" << i << endl;
             }
             else {
-                if(showLogs)
+                if(isShowLogs())
                     cout << "- Target not reached, proceding to next iteration step" << endl;
             }
 
@@ -171,35 +194,35 @@ private:
     }
 
 public:
-    static bool analyzePolicy(Policy& policy, bool showLogs = false) {
+    bool analyzePolicy() {
         //first step: backward slicing
-        if(showLogs)
+        if(isShowLogs())
             cout << "ANALYZER BEGIN" << endl;
-        if(showLogs)
+        if(isShowLogs())
             cout << "1) backward slicing" << endl;
-        PolicyAnalyzer::backwardSlicing(policy);
+        PolicyAnalyzer::backwardSlicing(sourcePolicy);
 
         //second step: approximated analysis
-        if(showLogs)
+        if(isShowLogs())
             cout << "2) approximated analysis" << endl;
-        if(!PolicyAnalyzer::approximatedAnalysis(policy)) {
-            if(showLogs) {
+        if(!PolicyAnalyzer::approximatedAnalysis(sourcePolicy)) {
+            if(isShowLogs()) {
                 cout << "- approximated analysis succeeded" << endl;
                 cout << "ANALYZER END" << endl;
             }
             return false;
         }
         else {
-            if(showLogs)
+            if(isShowLogs())
                 cout << "- approximated analysis failed" << endl;
         }
 
         //third step: brute force
-        if(showLogs)
+        if(isShowLogs())
             cout << "3) Evaluation" << endl;
-        map<string, vector<string>> initRoles = buildInitialRoles(policy);
-        bool result = bruteForce(initRoles, policy, showLogs);
-        if(showLogs)
+        map<string, vector<string>> initRoles = buildInitialRoles(sourcePolicy);
+        bool result = bruteForce(initRoles, sourcePolicy);
+        if(isShowLogs())
             cout << "ANALYZER END" << endl;
         return result;
     }

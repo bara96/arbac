@@ -35,7 +35,7 @@ public:
     Policy parseFile() {
         if(isShowLogs()) {
             cout << "PARSER BEGIN" << endl;
-            cout << "1) Reading File" << getFilename() << endl;
+            cout << "1) Reading File: " << getFilename() << endl;
         }
 
         ifstream arbacFile(getFilename());
