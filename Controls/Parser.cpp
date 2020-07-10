@@ -11,9 +11,10 @@ using namespace std;
 class Parser {
 private:
     string filename;
+    bool showLogs;
 
 public:
-    explicit Parser(string filename) : filename(move(filename)) {}
+    explicit Parser(string filename, bool showLogs = false) : filename(std::move(filename)), showLogs(showLogs) {}
 
     const string &getFilename() const {
         return filename;
@@ -23,8 +24,21 @@ public:
         Parser::filename = filenameVal;
     }
 
+    bool isShowLogs() const {
+        return showLogs;
+    }
+
+    void setShowLogs(bool showLogsVal) {
+        Parser::showLogs = showLogsVal;
+    }
+
     Policy parseFile() {
-        ifstream arbacFile(filename);
+        if(isShowLogs()) {
+            cout << "PARSER BEGIN" << endl;
+            cout << "1) Reading File" << getFilename() << endl;
+        }
+
+        ifstream arbacFile(getFilename());
         if(!arbacFile.good())
             throw ("Can't open File");
 
@@ -33,6 +47,7 @@ public:
         CA canAssign = CA();
         CR canRevoke = CR();
 
+
         for(string line; getline(arbacFile, line );){
             if(!line.empty()) {
                 istringstream iss(line);
@@ -40,39 +55,53 @@ public:
 
                 string head = *values.begin();
                 if(head == "Roles") {
+                    if(isShowLogs())
+                        cout << "- Reading Roles Line" << endl;
                     Parser::removeFirstLast(&values);
                     policy.setRoles(values);
                 }
 
                 if(head == "Users") {
+                    if(isShowLogs())
+                        cout << "- Reading Users Line" << endl;
                     Parser::removeFirstLast(&values);
                     policy.setUsers(values);
                 }
 
                 if(head == "UA") {
+                    if(isShowLogs())
+                        cout << "- Reading UA Line" << endl;
                     Parser::removeFirstLast(&values);
                     vector<UR> urList = Parser::getUserRoles(values);
                     policy.setUserRoles(urList);
                 }
 
                 if(head == "CR") {
+                    if(isShowLogs())
+                        cout << "- Reading CR Line" << endl;
                     Parser::removeFirstLast(&values);
                     vector<CR> crList = Parser::getCanRevoke(values);
                     policy.setCanRevoke(crList);
                 }
 
                 if(head == "CA") {
+                    if(isShowLogs())
+                        cout << "- Reading CA Line" << endl;
                     Parser::removeFirstLast(&values);
                     vector<CA> caList = Parser::getCanAssign(values);
                     policy.setCanAssign(caList);
                 }
 
                 if(head == "Goal") {
+                    if(isShowLogs())
+                        cout << "- Reading Goal Line" << endl;
                     Parser::removeFirstLast(&values);
                     policy.setGoal(values.at(0));
                 }
             }
         }
+        if(isShowLogs())
+            cout << "PARSER END" << endl;
         return policy;
     }
 
