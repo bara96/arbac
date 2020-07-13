@@ -91,8 +91,7 @@ private:
         }
         reducedPolicy.setCanAssign(reducedCa);
 
-        map<string, vector<string>> initRoles = buildInitialRoles(getPolicy());
-        return bruteForce(initRoles, reducedPolicy);
+        return bruteForce(reducedPolicy);
     }
 
     /***
@@ -156,7 +155,8 @@ private:
      * @param policy : the source Policy
      * @return
      */
-    bool bruteForce(map<string,vector<string>>& initialRoles, const Policy& policy) const{
+    bool bruteForce(const Policy& policy) const{
+        map<string, vector<string>> initialRoles = buildInitialRoles(policy);
         vector<map<string,vector<string>>> tried;   //set of all the tries
         tried.push_back(initialRoles);
         int found = 0;
@@ -249,8 +249,7 @@ public:
         //third step: brute force
         if(isShowLogs())
             cout << "3) Evaluation" << endl;
-        map<string, vector<string>> initRoles = buildInitialRoles(sourcePolicy);
-        bool result = bruteForce(initRoles, sourcePolicy);
+        bool result = bruteForce(sourcePolicy);
         if(isShowLogs())
             cout << "ANALYZER END" << endl;
         return result;
