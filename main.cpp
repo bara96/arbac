@@ -4,13 +4,18 @@
 using namespace std;
 
 int main() {
+    bool showLogs = true;
     string filename = "../policies/policy1.arbac";
     Policy policy;
     try {
-        Parser parser = Parser(filename);
+        Parser parser = Parser(filename, showLogs);
         policy = parser.parseFile();
-        Policy policy1 = PolicyAnalyzer::backwardSlicing(policy);
-        Policy policy2 = PolicyAnalyzer::approximatedAnalyses(policy);
+
+        PolicyAnalyzer analyzer(policy, showLogs);
+        if(analyzer.analyzePolicy())
+            cout << endl << "RESULT: Reachable" << endl;
+        else
+            cout << endl << "RESULT: Not Reachable" << endl;
     }
     catch (const char* msg) {
         cerr << msg << endl;
