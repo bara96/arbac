@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <forward_list>
 #include "../Models/Policy/Policy.h"
 
 using namespace std;
@@ -157,8 +158,8 @@ private:
      */
     bool bruteForce(const Policy& policy) const{
         map<string, vector<string>> initialRoles = buildInitialRoles(policy);
-        vector<map<string,vector<string>>> tried;   //set of all the tries
-        tried.push_back(initialRoles);
+        forward_list<map<string, vector<string>>> tried;
+        tried.push_front(initialRoles);
         int found = 0;
         int i = 1;
 
@@ -166,21 +167,21 @@ private:
             bool changes = false;
             if(isShowLogs())
                 cout << "- Iteration step n'" << i << endl;
-            vector<map<string, vector<string>>> newTries;      //set of the current tries
-            for (map<string,vector<string>>& roleSet: tried) {
+            forward_list<map<string, vector<string>>> newTries;      //set of the current tries
+            for (auto & roleSetIt : tried) {
                 //Check Can Assign Rules
                 for (const CA& assign: policy.getCanAssign()) {
-                    vector<string> admins = Utility::findUsersWithRole(assign.getRoleAdmin(), roleSet);
+                    vector<string> admins = Utility::findUsersWithRole(assign.getRoleAdmin(), roleSetIt);
                     if (!empty(admins)) {
-                        for (const auto &it: roleSet) {
+                        for (const auto &it: roleSetIt) {
                             vector<string> targetUserRoles = it.second;
                             bool positiveConditionsCheck = Utility::everyCondition(assign.getPositiveConditions(), targetUserRoles);    //check if it respect positive conditions
                             if (positiveConditionsCheck) {
                                 bool negativeConditionsCheck = Utility::someCondition(assign.getNegativeConditions(), targetUserRoles);     //check if it respect negative conditions
                                 if (!negativeConditionsCheck) {
-                                    map<string, vector<string>> assigment = assignUserRole(it.first, assign.getRoleTarget(), roleSet, policy.getGoal(), found);     //do a role assignment
+                                    map<string, vector<string>> assigment = assignUserRole(it.first, assign.getRoleTarget(), roleSetIt, policy.getGoal(), found);     //do a role assignment
                                     if (!empty(assigment)) {
-                                        newTries.push_back(assigment);
+                                        tried.push_front(assigment);
                                         changes = true;
                                     }
                                 }
@@ -191,12 +192,12 @@ private:
 
                 //Check Can Revoke Rules
                 for (const CR &revoke: policy.getCanRevoke()) {
-                    vector<string> admins = Utility::findUsersWithRole(revoke.getRoleAdmin(), roleSet);
+                    vector<string> admins = Utility::findUsersWithRole(revoke.getRoleAdmin(), roleSetIt);
                     if (!empty(admins)) {
-                        for (const auto &it: roleSet) {
-                            map<string, vector<string>> revocation = revokeUserRole(it.first, revoke.getRoleTarget(), roleSet);    //do a role revocation
+                        for (const auto &it: roleSetIt) {
+                            map<string, vector<string>> revocation = revokeUserRole(it.first, revoke.getRoleTarget(), roleSetIt);    //do a role revocation
                             if (!empty(revocation) && !Utility::isRoleSetEmpty(revocation)) {
-                                newTries.push_back(revocation);
+                                tried.push_front(revocation);
                                 changes = true;
                             }
                         }
@@ -216,7 +217,8 @@ private:
                     cout << "- Target not reached, proceding to next iteration step" << endl;
             }
 
-            tried.insert(tried.end(), newTries.begin(), newTries.end());    //add mew tries to the tried set
+            newTries.sort();
+            tried.merge(newTries);    //add mew tries to the tried set
             ++i;
         }
         return found;
