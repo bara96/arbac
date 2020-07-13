@@ -3,5 +3,14 @@
 -ANDI
 
 -COMMON TASKS:
-    1) analizzare l'algoritmo backward slicing (capirlo)
-    2) implementare il backward slicing
+    1) Ottimizzare il brute force
+    2) Ottimizzare le operazioni in Utility sul roleSet
+
+PROBLEMI:
+    - Il roleSet che viene a crearsi già alla terza iterazione risulta in un vettore con migliaia di mapping  map<string, vector<string>> su cui successivamente fare altre iterazioni
+    - La grandezza eccessiva del vettore fa andare il programma in errore
+IDEE:
+    - cambiare il map map<string, vector<string>> con map<int, vector<int>>:    assegnare quindi ogni user ad un numero, e ogni role ad un numero, le comparazioni negli interi sono più veloci e pesano meno
+    - rivedere il map.find() performance    =>   https://stackoverflow.com/questions/10165708/stl-map-performance
+    - saltare i controlli sui roleSet che non sono stati alterati e sono già stati controllati
+    - implementare un nuovo algoritmo (da vedere paper di Calzavara)

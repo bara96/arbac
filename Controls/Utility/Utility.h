@@ -83,23 +83,10 @@ public:
     static bool someCondition(const vector<string> &condRules, const vector<string>& roles);
 
     /***
-     * Assign an user-role pair to the roleSet map
-     * @param user : user to assign
-     * @param role : role to assign
-     * @param roleSet : origin roleSet
-     * @return
+     * Check if a RoleSet is empty
+     * @param roleSet
+     * @return true if roleSet is empty, false otherwise
      */
-    static map<string,vector<string>> assignUserRole(const string& user, const string& role, map<string, vector<string>> &roleSet);
-
-    /***
-     * Revoke an user-role pair to the roleSet map
-     * @param user : user to assign
-     * @param role : role to assign
-     * @param roleSet : origin roleSet
-     * @return
-     */
-    static map<string,vector<string>> revokeUserRole(const string& user, const string& role, map<string, vector<string>> &roleSet);
-
     static bool isRoleSetEmpty(const map<string, vector<string>> &roleSet);
 };
 
