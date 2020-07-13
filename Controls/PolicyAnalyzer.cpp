@@ -114,17 +114,41 @@ private:
     }
 
     /***
-     * Check if some user has reached the role target into the role set
-     * @param roleSetAssignments
-     * @param target
-     * @return return true if target role is found, false otherwise
-     */
-    static bool targetReached(const vector<map<string,vector<string>>>& roleSetAssignments, const string& target) {
-        for(const map<string,vector<string>>& roleSet: roleSetAssignments){
-            if(!empty(Utility::findUsersWithRole(target, roleSet)))
-                return true;
+    * Assign an user-role pair to the roleSet map
+    * @param user : user to assign
+    * @param role : role to assign
+    * @param roleSet : origin roleSet
+    * @return
+    */
+    static map<string,vector<string>> assignUserRole(const string& user, const string& role, map<string, vector<string>> &roleSet, const string& roleGoal, int &found) {
+        map<string,vector<string>> roleSetTemp(roleSet);
+        if (!empty(roleSetTemp.find(user)->second)) {
+            roleSetTemp.at(user).push_back(role);
+            if(role == roleGoal)
+                found = 1;
+            return roleSetTemp;
         }
-        return false;
+        map<string,vector<string>> empty;    //TODO consider to swap nullptr
+        return empty;
+    }
+
+    /***
+     * Revoke an user-role pair to the roleSet map
+     * @param user : user to assign
+     * @param role : role to assign
+     * @param roleSet : origin roleSet
+     * @return
+     */
+    static map<string,vector<string>> revokeUserRole(const string& user, const string& role, map<string, vector<string>> &roleSet) {
+        map<string,vector<string>> roleSetTemp(roleSet);
+        if (!empty(roleSetTemp.find(user)->second)) {
+            auto it = find(roleSetTemp.at(user).begin(), roleSetTemp.at(user).end(), role);
+            if (it != roleSetTemp.at(user).end()) {
+                roleSetTemp.at(user).erase(it);
+            }
+        }
+        map<string,vector<string>> empty;    //TODO consider to swap nullptr
+        return empty;
     }
 
     /***
@@ -135,10 +159,11 @@ private:
     bool bruteForce(map<string,vector<string>>& initialRoles, const Policy& policy) const{
         vector<map<string,vector<string>>> tried;   //set of all the tries
         tried.push_back(initialRoles);
-        bool found = false;
+        int found = 0;
         int i = 1;
 
-        while (!found){
+        while (found == 0){
+            bool changes = false;
             if(isShowLogs())
                 cout << "- Iteration step n'" << i << endl;
             vector<map<string, vector<string>>> newTries;      //set of the current tries
@@ -153,9 +178,10 @@ private:
                             if (positiveConditionsCheck) {
                                 bool negativeConditionsCheck = Utility::someCondition(assign.getNegativeConditions(), targetUserRoles);     //check if it respect negative conditions
                                 if (!negativeConditionsCheck) {
-                                    map<string, vector<string>> assigment = Utility::assignUserRole(it.first, assign.getRoleTarget(), roleSet);     //do a role assignment
+                                    map<string, vector<string>> assigment = assignUserRole(it.first, assign.getRoleTarget(), roleSet, policy.getGoal(), found);     //do a role assignment
                                     if (!empty(assigment)) {
                                         newTries.push_back(assigment);
+                                        changes = true;
                                     }
                                 }
                             }
@@ -168,21 +194,24 @@ private:
                     vector<string> admins = Utility::findUsersWithRole(revoke.getRoleAdmin(), roleSet);
                     if (!empty(admins)) {
                         for (const auto &it: roleSet) {
-                            map<string, vector<string>> revocation = Utility::revokeUserRole(it.first, revoke.getRoleTarget(), roleSet);    //do a role revocation
+                            map<string, vector<string>> revocation = revokeUserRole(it.first, revoke.getRoleTarget(), roleSet);    //do a role revocation
                             if (!empty(revocation) && !Utility::isRoleSetEmpty(revocation)) {
                                 newTries.push_back(revocation);
+                                changes = true;
                             }
                         }
                     }
                 }
             }
 
-            if(targetReached(newTries, policy.getGoal())){
-                found = true;
+            if(found > 0){
                 if(isShowLogs())
                     cout << "- Target reached at iteration step n'" << i << endl;
+                return true;
             }
             else {
+                if(!changes)
+                    return false;
                 if(isShowLogs())
                     cout << "- Target not reached, proceding to next iteration step" << endl;
             }
@@ -214,7 +243,7 @@ public:
         }
         else {
             if(isShowLogs())
-                cout << "- approximated analysis failed" << endl;
+                cout << "- approximated analysis inconclusive" << endl;
         }
 
         //third step: brute force

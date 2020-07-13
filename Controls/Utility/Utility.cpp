@@ -60,28 +60,6 @@ bool Utility::someCondition(const vector<string> &condRules, const vector<string
     return false;
 }
 
-map<string,vector<string>> Utility::assignUserRole(const string& user, const string& role, map<string, vector<string>> &roleSet) {
-    map<string,vector<string>> roleSetTemp(roleSet);
-    if (!empty(roleSetTemp.find(user)->second)) {
-        roleSetTemp.at(user).push_back(role);
-        return roleSetTemp;
-    }
-    map<string,vector<string>> empty;    //TODO consider to swap nullptr
-    return empty;
-}
-
-map<string,vector<string>> Utility::revokeUserRole(const string& user, const string& role, map<string, vector<string>> &roleSet) {
-    map<string,vector<string>> roleSetTemp(roleSet);
-    if (!empty(roleSetTemp.find(user)->second)) {
-        auto it = find(roleSetTemp.at(user).begin(), roleSetTemp.at(user).end(), role);
-        if (it != roleSetTemp.at(user).end()) {
-            roleSetTemp.at(user).erase(it);
-        }
-    }
-    map<string,vector<string>> empty;    //TODO consider to swap nullptr
-    return empty;
-}
-
 bool Utility::isRoleSetEmpty(const map<string, vector<string>> &roleSet) {
     for(const auto & it : roleSet) {
         if (!empty(it.second))
