@@ -7,5 +7,6 @@ UA <user0,Admin> <user1,Doctor> <user2,Doctor> <user3,Nurse> ;
 CR <Doctor,ThirdParty> <Doctor,ReferredDoctor> <MedicalManager,MedicalTeam> <Manager,Employee> <Manager,MedicalManager> <Manager,Receptionist> <Manager,Nurse> <Manager,Doctor> <Patient,Agent> <Patient,PrimaryDoctor> <Doctor,Patient> <ThirdParty,PatientWithTPC> ;
 
 CA <Admin,Receptionist&Doctor,target> <Doctor,TRUE,ThirdParty> ;
+
 Goal ThirdParty ;
 
