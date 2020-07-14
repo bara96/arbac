@@ -226,8 +226,6 @@ private:
             ++i;
         }
 
-        tried.shrink_to_fit();
-
         return found;
     }
 
