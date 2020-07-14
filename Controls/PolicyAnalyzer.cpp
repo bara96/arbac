@@ -127,6 +127,8 @@ private:
                 found = 1;
             return roleSetTemp;
         }
+        else
+            roleSetTemp.clear();
         map<string,vector<string>> empty;    //TODO consider to swap nullptr
         return empty;
     }
@@ -146,6 +148,8 @@ private:
                 roleSetTemp.at(user).erase(it);
             }
         }
+        else
+            roleSetTemp.clear();
         map<string,vector<string>> empty;    //TODO consider to swap nullptr
         return empty;
     }
@@ -219,6 +223,9 @@ private:
             tried.insert(tried.end(), newTries.begin(), newTries.end());    //add mew tries to the tried set
             ++i;
         }
+
+        tried.shrink_to_fit();
+
         return found;
     }
 
