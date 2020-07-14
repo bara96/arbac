@@ -24,7 +24,7 @@ string Utility::findRole(const string& toFind, vector<string> roles){
 
     int index = distance(roles.begin(), it);
     return roles.at(index);
-};
+}
 
 vector<string> Utility::findUsersWithRole(const string& role, const map<string, vector<string>>& roleSet) {
     vector<string> users;
