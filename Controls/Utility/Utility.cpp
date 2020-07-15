@@ -27,8 +27,8 @@ string Utility::findRole(const string& toFind, vector<string> roles){
     return roles.at(index);
 }
 
-vector<string> Utility::findUsersWithRole(const string& role, const map<string, vector<string>>& roleSet) {
-    vector<string> users;
+vector<int> Utility::findUsersWithRole(const string& role, const unordered_map<int, vector<string>>& roleSet) {
+    vector<int> users;
     for (auto &it : roleSet) {
         if (!empty(Utility::findRole(role, it.second))) {
             users.push_back(it.first);
@@ -37,7 +37,7 @@ vector<string> Utility::findUsersWithRole(const string& role, const map<string, 
     return users;
 }
 
-void Utility::printRoleSet(const map<string, vector<string>>& roleSet) {
+void Utility::printRoleSet(const unordered_map<string, vector<string>>& roleSet) {
     for (const auto & it : roleSet)
     {
         cout << it.first << ": ";
@@ -62,7 +62,7 @@ bool Utility::someCondition(const vector<string> &condRules, const vector<string
     return false;
 }
 
-bool Utility::isRoleSetEmpty(const map<string, vector<string>> &roleSet) {
+bool Utility::isRoleSetEmpty(const unordered_map<int, vector<string>> &roleSet) {
     for(const auto & it : roleSet) {
         if (!empty(it.second))
             return false;

@@ -4,7 +4,7 @@
 
 #include <utility>
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <string>
 #include "../Models/Policy/Policy.h"
 
@@ -99,15 +99,20 @@ private:
      * @param policy : the policy where to build the set
      * @return
      */
-    static map<string, vector<string>> buildInitialRoles(const Policy& policy) {
-        map<string, vector<string>> roleSet;
-        for(const string& user: policy.getUsers()) {
+    static unordered_map<int, vector<string>> buildInitialRoles(const Policy& policy) {
+        unordered_map<int, vector<string>> roleSet;
+        for(const auto& it: policy.getUsersIndexes()) {
             vector<string> set;
-            roleSet.insert(std::pair<string,vector<string>>(user,set));
+            roleSet.insert(std::pair<int,vector<string>>(it.second , set));
         }
+
         for(const UR& ur: policy.getUserRoles()) {
-            auto it = roleSet.find(ur.getUser());
-            it->second.push_back(ur.getRole());
+            auto userIndex = policy.getUsersIndexes().find(ur.getUser());
+            if(userIndex != policy.getUsersIndexes().end()) {
+                auto it = roleSet.find(userIndex->second);
+                if(it != roleSet.end());
+                it->second.push_back(ur.getRole());
+            }
         }
         return roleSet;
     }
@@ -119,8 +124,8 @@ private:
     * @param roleSet : origin roleSet
     * @return
     */
-    static map<string,vector<string>> assignUserRole(const string& user, const string& role, map<string, vector<string>> &roleSet, const string& roleGoal, int &found) {
-        map<string,vector<string>> roleSetTemp(roleSet);
+    static unordered_map<int,vector<string>> assignUserRole(const int& user, const string& role, unordered_map<int, vector<string>> &roleSet, const string& roleGoal, int &found) {
+        unordered_map<int,vector<string>> roleSetTemp(roleSet);
         if (!empty(roleSetTemp.find(user)->second)) {
             roleSetTemp.at(user).push_back(role);
             if(role == roleGoal)
@@ -129,7 +134,7 @@ private:
         }
         else
             roleSetTemp.clear();
-        map<string,vector<string>> empty;    //TODO consider to swap nullptr
+        unordered_map<int,vector<string>> empty;    //TODO consider to swap nullptr
         return empty;
     }
 
@@ -140,8 +145,8 @@ private:
      * @param roleSet : origin roleSet
      * @return
      */
-    static map<string,vector<string>> revokeUserRole(const string& user, const string& role, map<string, vector<string>> &roleSet) {
-        map<string,vector<string>> roleSetTemp(roleSet);
+    static unordered_map<int,vector<string>> revokeUserRole(const int& user, const string& role, unordered_map<int, vector<string>> &roleSet) {
+        unordered_map<int,vector<string>> roleSetTemp(roleSet);
         if (!empty(roleSetTemp.find(user)->second)) {
             auto it = find(roleSetTemp.at(user).begin(), roleSetTemp.at(user).end(), role);
             if (it != roleSetTemp.at(user).end()) {
@@ -150,7 +155,7 @@ private:
         }
         else
             roleSetTemp.clear();
-        map<string,vector<string>> empty;    //TODO consider to swap nullptr
+        unordered_map<int,vector<string>> empty;    //TODO consider to swap nullptr
         return empty;
     }
 
@@ -160,8 +165,8 @@ private:
      * @return
      */
     bool bruteForce(const Policy& policy) const{
-        map<string, vector<string>> initialRoles = buildInitialRoles(policy);
-        vector<map<string,vector<string>>> tried;   //set of all the tries
+        unordered_map<int, vector<string>> initialRoles = buildInitialRoles(policy);
+        vector<unordered_map<int,vector<string>>> tried;   //set of all the tries
         tried.push_back(initialRoles);
         int found = 0;
         int i = 1;
@@ -170,11 +175,11 @@ private:
             bool changes = false;
             if(isShowLogs())
                 cout << "- Iteration step n'" << i << endl;
-            vector<map<string, vector<string>>> newTries;      //set of the current tries
-            for (map<string,vector<string>>& roleSet: tried) {
+            vector<unordered_map<int, vector<string>>> newTries;      //set of the current tries
+            for (unordered_map<int, vector<string>>& roleSet: tried) {
                 //Check Can Assign Rules
                 for (const CA& assign: policy.getCanAssign()) {
-                    vector<string> admins = Utility::findUsersWithRole(assign.getRoleAdmin(), roleSet);
+                    vector<int> admins = Utility::findUsersWithRole(assign.getRoleAdmin(), roleSet);
                     if (!empty(admins)) {
                         for (const auto &it: roleSet) {
                             vector<string> targetUserRoles = it.second;
@@ -182,7 +187,7 @@ private:
                             if (positiveConditionsCheck) {
                                 bool negativeConditionsCheck = Utility::someCondition(assign.getNegativeConditions(), targetUserRoles);     //check if it respect negative conditions
                                 if (!negativeConditionsCheck) {
-                                    map<string, vector<string>> assigment = assignUserRole(it.first, assign.getRoleTarget(), roleSet, policy.getGoal(), found);     //do a role assignment
+                                    unordered_map<int, vector<string>> assigment = assignUserRole(it.first, assign.getRoleTarget(), roleSet, policy.getGoal(), found);     //do a role assignment
                                     if (!empty(assigment)) {
                                         newTries.push_back(assigment);
                                         changes = true;
@@ -195,10 +200,10 @@ private:
 
                 //Check Can Revoke Rules
                 for (const CR &revoke: policy.getCanRevoke()) {
-                    vector<string> admins = Utility::findUsersWithRole(revoke.getRoleAdmin(), roleSet);
+                    vector<int> admins = Utility::findUsersWithRole(revoke.getRoleAdmin(), roleSet);
                     if (!empty(admins)) {
                         for (const auto &it: roleSet) {
-                            map<string, vector<string>> revocation = revokeUserRole(it.first, revoke.getRoleTarget(), roleSet);    //do a role revocation
+                            unordered_map<int, vector<string>> revocation = revokeUserRole(it.first, revoke.getRoleTarget(), roleSet);    //do a role revocation
                             if (!empty(revocation) && !Utility::isRoleSetEmpty(revocation)) {
                                 newTries.push_back(revocation);
                                 changes = true;

@@ -5,6 +5,7 @@
 #ifndef ARBAC_POLICY_H
 #define ARBAC_POLICY_H
 
+#include <unordered_map>
 #include <utility>
 #include <vector>
 #include <xstring>
@@ -17,6 +18,7 @@ class Policy {
 private:
     std::vector<std::string> roles;
     std::vector<std::string> users;
+    std::unordered_map<std::string, int> usersIndexes;
     std::vector<UR> userRoles;
     std::vector<CR> canRevoke;
     std::vector<CA> canAssign;
@@ -65,11 +67,24 @@ public:
 
     void setGoal(const std::string &goalVal);
 
+    const unordered_map<std::string, int> &getUsersIndexes() const;
+
+    void setUsersIndexes(const unordered_map<std::string, int> &usersIndexesVal);
+
+    void setUsersIndexes(const std::vector<std::string> &usersVal);
+
     void print() {
         std::cout << "Roles: " << "\n";
         Utility::printVector(roles);
+
         std::cout << "Users: " << "\n";
         Utility::printVector(users);
+
+        std::cout << "Users Indexes: " << "\n";
+        for (auto & it : usersIndexes) {
+            cout << it.first << " " << it.second << "\n";
+        }
+
         std::cout << "UR: " << "\n";
         for (auto & value : userRoles) {
             value.print();

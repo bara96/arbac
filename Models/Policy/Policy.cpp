@@ -22,6 +22,7 @@ void Policy::setRoles(const std::vector<std::string> &roleVal) {
 
 void Policy::setUsers(const std::vector<std::string> &usersVal) {
     Policy::users = usersVal;
+    Policy::setUsersIndexes(usersVal);
 }
 
 void Policy::setUserRoles(const std::vector<UR> &userRolesVal) {
@@ -38,4 +39,24 @@ void Policy::setCanAssign(const std::vector<CA> &canAssignVal) {
 
 void Policy::setGoal(const std::string &goalVal) {
     Policy::goal = goalVal;
+}
+
+const unordered_map<std::string, int> &Policy::getUsersIndexes() const {
+    return usersIndexes;
+}
+
+void Policy::setUsersIndexes(const unordered_map<std::string, int> &usersIndexesVal) {
+    Policy::usersIndexes = usersIndexesVal;
+}
+
+void Policy::setUsersIndexes(const std::vector<std::string> &usersVal) {
+    Policy::usersIndexes.clear();
+    int i = 0;
+    //Set user indexes
+    for(const string& user : usersVal) {
+        if(Policy::usersIndexes.find(user) == Policy::usersIndexes.end()) {
+            Policy::usersIndexes.insert(std::pair<string, int>(user, i));
+            ++i;
+        }
+    }
 }

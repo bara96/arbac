@@ -5,6 +5,7 @@
 #ifndef ARBAC_UTILITY_H
 #define ARBAC_UTILITY_H
 
+#include <unordered_map>
 #include <string>
 #include <vector>
 #include <sstream>
@@ -58,13 +59,13 @@ public:
      * @param role
      * @return
      */
-    static vector<string> findUsersWithRole(const string &role, const map<string, vector<string>> &roleSet);
+    static vector<int> findUsersWithRole(const string &role, const unordered_map<int, vector<string>> &roleSet);
 
     /***
      * Print a set of User-Role assignments
      * @param roleSet
      */
-    static void printRoleSet(const map<string, vector<string>> &roleSet);
+    static void printRoleSet(const unordered_map<string, vector<string>> &roleSet);
 
     /***
      * Check for positive conditions for the string
@@ -87,7 +88,7 @@ public:
      * @param roleSet
      * @return true if roleSet is empty, false otherwise
      */
-    static bool isRoleSetEmpty(const map<string, vector<string>> &roleSet);
+    static bool isRoleSetEmpty(const unordered_map<int, vector<string>> &roleSet);
 };
 
 
