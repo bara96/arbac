@@ -12,10 +12,12 @@ int main() {
         policy = parser.parseFile();
 
         PolicyAnalyzer analyzer(policy, showLogs);
+
         if(analyzer.analyzePolicy())
             cout << endl << "RESULT: Reachable" << endl;
         else
             cout << endl << "RESULT: Not Reachable" << endl;
+
     }
     catch (const char* msg) {
         cerr << msg << endl;

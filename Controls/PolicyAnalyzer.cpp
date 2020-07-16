@@ -6,7 +6,7 @@
 #include <vector>
 #include <map>
 #include <string>
-#include <forward_list>
+#include "../Controls/Cache.cpp"
 #include "../Models/Policy/Policy.h"
 
 using namespace std;
@@ -161,31 +161,36 @@ private:
      * @return
      */
     bool bruteForce(const Policy& policy) const{
-        map<string, vector<string>> initialRoles = buildInitialRoles(policy);
-        forward_list<map<string, vector<string>>> tried;
-        tried.push_front(initialRoles);
         int found = 0;
         int i = 1;
+        bool isOnBuffer = false;
+        map<string, vector<string>> initialRoles = buildInitialRoles(policy);
+        Cache cache = Cache();
+        cache.storeSet(initialRoles);
 
         while (found == 0){
             bool changes = false;
             if(isShowLogs())
                 cout << "- Iteration step n'" << i << endl;
-            forward_list<map<string, vector<string>>> newTries;      //set of the current tries
-            for (auto & roleSetIt : tried) {
+
+            vector<map<string, vector<string>>> newTries;      //set of the current tries
+            ifstream inputStream;
+            inputStream.open(cache.getFilename());
+            while (inputStream.peek() != EOF) {
+                map<string, vector<string>> roleSet = cache.readSet<string>(inputStream);
                 //Check Can Assign Rules
                 for (const CA& assign: policy.getCanAssign()) {
-                    vector<string> admins = Utility::findUsersWithRole(assign.getRoleAdmin(), roleSetIt);
+                    vector<string> admins = Utility::findUsersWithRole(assign.getRoleAdmin(), roleSet);
                     if (!empty(admins)) {
-                        for (const auto &it: roleSetIt) {
+                        for (const auto &it: roleSet) {
                             vector<string> targetUserRoles = it.second;
                             bool positiveConditionsCheck = Utility::everyCondition(assign.getPositiveConditions(), targetUserRoles);    //check if it respect positive conditions
                             if (positiveConditionsCheck) {
                                 bool negativeConditionsCheck = Utility::someCondition(assign.getNegativeConditions(), targetUserRoles);     //check if it respect negative conditions
                                 if (!negativeConditionsCheck) {
-                                    map<string, vector<string>> assigment = assignUserRole(it.first, assign.getRoleTarget(), roleSetIt, policy.getGoal(), found);     //do a role assignment
+                                    map<string, vector<string>> assigment = assignUserRole(it.first, assign.getRoleTarget(), roleSet, policy.getGoal(), found);     //do a role assignment
                                     if (!empty(assigment)) {
-                                        tried.push_front(assigment);
+                                        newTries.push_back(assigment);
                                         changes = true;
                                     }
                                 }
@@ -196,18 +201,28 @@ private:
 
                 //Check Can Revoke Rules
                 for (const CR &revoke: policy.getCanRevoke()) {
-                    vector<string> admins = Utility::findUsersWithRole(revoke.getRoleAdmin(), roleSetIt);
+                    vector<string> admins = Utility::findUsersWithRole(revoke.getRoleAdmin(), roleSet);
                     if (!empty(admins)) {
-                        for (const auto &it: roleSetIt) {
-                            map<string, vector<string>> revocation = revokeUserRole(it.first, revoke.getRoleTarget(), roleSetIt);    //do a role revocation
+                        for (const auto &it: roleSet) {
+                            map<string, vector<string>> revocation = revokeUserRole(it.first, revoke.getRoleTarget(), roleSet);    //do a role revocation
                             if (!empty(revocation) && !Utility::isRoleSetEmpty(revocation)) {
-                                tried.push_front(revocation);
+                                newTries.push_back(revocation);
                                 changes = true;
                             }
                         }
                     }
                 }
+
+                if(newTries.size() >= 100000) {
+                    for(const auto& set : newTries) {
+                        cache.storeSet(set, cache.Source::BUFFER);
+                    }
+                    isOnBuffer = true;
+                    newTries.clear();
+                }
             }
+
+            inputStream.close();
 
             if(found > 0){
                 if(isShowLogs())
@@ -221,8 +236,15 @@ private:
                     cout << "- Target not reached, proceding to next iteration step" << endl;
             }
 
-            newTries.sort();
-            tried.merge(newTries);    //add mew tries to the tried set
+            if(isOnBuffer) {
+                cache.copyBufferOnCache();
+                isOnBuffer = false;
+            }
+            for(const auto& set : newTries) {
+                cache.storeSet(set);
+            }
+            newTries.clear();
+
             ++i;
         }
 
@@ -260,5 +282,18 @@ public:
         if(isShowLogs())
             cout << "ANALYZER END" << endl;
         return result;
+    }
+
+    void test() {
+        map<string, vector<string>> initialRoles = buildInitialRoles(sourcePolicy);
+        Cache cache = Cache();
+        cache.storeSet(initialRoles);
+        ifstream inputStream;
+        inputStream.open(cache.getFilename());
+        while (inputStream.peek() != EOF) {
+            map<string, vector<string>> set = cache.readSet<string>(inputStream);
+            Utility::printRoleSet(set);
+        }
+        inputStream.close();
     }
 };
