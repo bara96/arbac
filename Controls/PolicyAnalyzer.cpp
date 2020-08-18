@@ -154,6 +154,42 @@ private:
         return empty;
     }
 
+    static int generateChildrens(const Policy& policy, map<string,vector<string>>& roleSet, vector<map<string, vector<string>>>& newTries) {
+        int found = 0;
+        //Check Can Assign Rules
+        for (const CA& assign: policy.getCanAssign()) {
+            vector<string> admins = Utility::findUsersWithRole(assign.getRoleAdmin(), roleSet);
+            if (!empty(admins)) {
+                for (const auto &it: roleSet) {
+                    vector<string> targetUserRoles = it.second;
+                    bool positiveConditionsCheck = Utility::everyCondition(assign.getPositiveConditions(), targetUserRoles);    //check if it respect positive conditions
+                    if (positiveConditionsCheck) {
+                        bool negativeConditionsCheck = Utility::someCondition(assign.getNegativeConditions(), targetUserRoles);     //check if it respect negative conditions
+                        if (!negativeConditionsCheck) {
+                            map<string, vector<string>> assigment = assignUserRole(it.first, assign.getRoleTarget(), roleSet, policy.getGoal(), found);     //do a role assignment
+                            if (!empty(assigment)) {
+                                newTries.push_back(assigment);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        //Check Can Revoke Rules
+        for (const CR &revoke: policy.getCanRevoke()) {
+            vector<string> admins = Utility::findUsersWithRole(revoke.getRoleAdmin(), roleSet);
+            if (!empty(admins)) {
+                for (const auto &it: roleSet) {
+                    map<string, vector<string>> revocation = revokeUserRole(it.first, revoke.getRoleTarget(), roleSet);    //do a role revocation
+                    if (!empty(revocation) && !Utility::isRoleSetEmpty(revocation)) {
+                        newTries.push_back(revocation);
+                    }
+                }
+            }
+        }
+        return found;
+    }
+
     /***
      * Try all the possible combinations
      * @param policy : the source Policy
@@ -165,64 +201,23 @@ private:
         vector<map<string,vector<string>>> tried;   //set of all the tries
         tried.push_back(initialRoles);
         int found = 0;
-        int i = 1;
 
         while (found == 0){
-            bool changes = false;
             if(isShowLogs())
-                cout << "- Iteration step n'" << i << endl;
-            vector<map<string, vector<string>>> newTries;      //set of the current tries
-            for (map<string,vector<string>>& roleSet: tried) {
-                //Check Can Assign Rules
-                for (const CA& assign: policy.getCanAssign()) {
-                    vector<string> admins = Utility::findUsersWithRole(assign.getRoleAdmin(), roleSet);
-                    if (!empty(admins)) {
-                        for (const auto &it: roleSet) {
-                            vector<string> targetUserRoles = it.second;
-                            bool positiveConditionsCheck = Utility::everyCondition(assign.getPositiveConditions(), targetUserRoles);    //check if it respect positive conditions
-                            if (positiveConditionsCheck) {
-                                bool negativeConditionsCheck = Utility::someCondition(assign.getNegativeConditions(), targetUserRoles);     //check if it respect negative conditions
-                                if (!negativeConditionsCheck) {
-                                    map<string, vector<string>> assigment = assignUserRole(it.first, assign.getRoleTarget(), roleSet, policy.getGoal(), found);     //do a role assignment
-                                    if (!empty(assigment)) {
-                                        newTries.push_back(assigment);
-                                        changes = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                cout << "- Depth level: " << tried.size() << endl;
 
-                //Check Can Revoke Rules
-                for (const CR &revoke: policy.getCanRevoke()) {
-                    vector<string> admins = Utility::findUsersWithRole(revoke.getRoleAdmin(), roleSet);
-                    if (!empty(admins)) {
-                        for (const auto &it: roleSet) {
-                            map<string, vector<string>> revocation = revokeUserRole(it.first, revoke.getRoleTarget(), roleSet);    //do a role revocation
-                            if (!empty(revocation) && !Utility::isRoleSetEmpty(revocation)) {
-                                newTries.push_back(revocation);
-                                changes = true;
-                            }
-                        }
-                    }
-                }
-            }
+            vector<map<string, vector<string>>> newTries;      //vector of childs
+            found = generateChildrens(policy, tried.at(tried.size() - 1), newTries);   //generate current node childs
 
             if(found > 0){
                 if(isShowLogs())
-                    cout << "- Target reached at iteration step n'" << i << endl;
+                    cout << "- Target reached at depth level: " << tried.size() << endl;
                 return true;
             }
             else {
-                if(!changes)
-                    return false;
                 if(isShowLogs())
-                    cout << "- Target not reached, proceding to next iteration step" << endl;
+                    cout << "- Target not reached, proceding to next level" << endl;
             }
-
-            tried.insert(tried.end(), newTries.begin(), newTries.end());    //add mew tries to the tried set
-            ++i;
         }
 
         tried.shrink_to_fit();
