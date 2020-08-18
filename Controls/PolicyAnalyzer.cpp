@@ -160,6 +160,7 @@ private:
      * @return
      */
     bool bruteForce(const Policy& policy) const{
+        //build set of initial roles
         map<string, vector<string>> initialRoles = buildInitialRoles(policy);
         vector<map<string,vector<string>>> tried;   //set of all the tries
         tried.push_back(initialRoles);
@@ -235,12 +236,12 @@ public:
         if(isShowLogs())
             cout << "ANALYZER BEGIN" << endl;
         if(isShowLogs())
-            cout << "1) backward slicing" << endl;
+            cout << "1) Backward slicing" << endl;
         PolicyAnalyzer::backwardSlicing(sourcePolicy);
 
         //second step: approximated analysis
         if(isShowLogs())
-            cout << "2) approximated analysis" << endl;
+            cout << "2) Approximated analysis" << endl;
         if(!PolicyAnalyzer::approximatedAnalysis(sourcePolicy)) {
             if(isShowLogs()) {
                 cout << "- approximated analysis succeeded" << endl;
