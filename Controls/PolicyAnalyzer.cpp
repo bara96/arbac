@@ -161,7 +161,7 @@ private:
      */
     static void removeEqualStates( const vector<map<string,vector<string>>>& tried, vector<map<string, vector<string>>>& childStates) {
         for (const map<string,vector<string>> &state: tried) {
-            for (int i = 0; i < childStates.size() - 1; ++i) {
+            for (int i = 0; i < childStates.size(); ++i) {
                 if(state == childStates.at(i))
                     childStates.erase(childStates.begin() + i);
             }
@@ -187,9 +187,11 @@ private:
                     if (positiveConditionsCheck) {
                         bool negativeConditionsCheck = Utility::someCondition(assign.getNegativeConditions(), targetUserRoles);     //check if it respect negative conditions
                         if (!negativeConditionsCheck) {
-                            map<string, vector<string>> assigment = assignUserRole(it.first, assign.getRoleTarget(), roleSet, policy.getGoal(), found);     //do a role assignment
-                            if (!empty(assigment)) {
-                                childStates.push_back(assigment);
+                            if(empty(Utility::findRole(assign.getRoleTarget(), it.second))) {
+                                map<string, vector<string>> assigment = assignUserRole(it.first, assign.getRoleTarget(),roleSet, policy.getGoal(),found);     //do a role assignment
+                                if (!empty(assigment)) {
+                                    childStates.push_back(assigment);
+                                }
                             }
                         }
                     }
@@ -220,56 +222,60 @@ private:
         //build set of initial roles
         map<string, vector<string>> initialRoles = buildInitialRoles(policy);
         vector<map<string,vector<string>>> tried;   //set of all the tries
-        vector<map<string, vector<string>>> childStates;      //vector of sons
         tried.push_back(initialRoles);
-        int state = 0;
+        vector<map<string, vector<string>>> childStates;      //vector of sons
+        vector<int> tree(1);    //map the tree nodes
+        int treeLevel = 0;  // count the tree level depth
         int found = 0; // 0 = analyzing, 1 = reachable, -1 = not reachable
-        bool generated = true;
+        bool newBranch = true;
 
         while (found == 0){
             if(isShowLogs())
-                cout << "- Depth level: " << state << endl;
+                cout << "- Depth level: " << treeLevel << endl;
 
-            if(generated) {     // the state is a new generated state
+            if(newBranch) {     // the state is a new generated node
                 childStates.clear();
-                found = generateChildrens(policy, tried.at(state), childStates);   //generate current node sons
+                found = generateChildrens(policy, tried.at(treeLevel), childStates);   //generate current node sons
                 removeEqualStates(tried, childStates);
-                if(!childStates.empty()) {
-                    tried.push_back(childStates.at(0));
-                    state++;
+
+                if(childStates.size() > 1) {  //if there are at least 2 sons
+                    tried.push_back(childStates.at(0)); // visit first child
+                    treeLevel++;    // increase tree level
+                    tree.push_back(1);  //map the node on tree
+                    cout << "A" << endl;
                 }
-                else {
-                    state--;
-                    generated = false;
+                else {  //if there is only a child
+                    treeLevel--;    //step back to previous node
+                    newBranch = false;
+                    cout << "B" << endl;
                 }
             }
-            else {  // the state is a previous generated state
+            else {  // the state is a previous generated node
                 childStates.clear();
-                found = generateChildrens(policy, tried.at(state), childStates);   //generate current node sons
+                found = generateChildrens(policy, tried.at(treeLevel), childStates);   //generate current node sons
                 removeEqualStates(tried, childStates);
-                bool childFound = false;
-                for(int k=0; k < childStates.size() && !childFound; ++k) {
-                    if(childStates.at(k) == tried.at(tried.size() - 1)) { //search last analyzed state
-                        if(k < childStates.size() - 1) { //if found, remove it from tries and add his right sibling instead
-                            tried.pop_back();
-                            tried.push_back(childStates.at(k));
-                            generated = true;
-                            childFound = true;
-                        }
-                    }
-                }
-                if(!childFound) {   //if all sons are already been visited, do a step back
-                    state--;
-                    generated = false;
-                }
 
-                if(state == 0 && !generated && !childFound)     // if root state has no sons to visit, then stop
-                    found = -1;
+                if(childStates.size() > 1) {  //if there are at least 2 sons
+                    tried.push_back(childStates.at(0)); //visit next sibling
+                    treeLevel++;   // increase tree level
+                    tree[treeLevel]++;  //map the node on tree
+                    newBranch = true;
+                    cout << "C" << endl;
+                }
+                else {  // if all te sons have been visited, erase all sons from vector, and step back
+                    tried.erase(tried.begin() + tree[treeLevel]);
+                    tree[treeLevel] = 0;
+                    treeLevel --;
+                    cout << "D" << endl;
+                }
             }
+
+            if(treeLevel < 0)
+                found = -1;
 
             if(found > 0){
                 if(isShowLogs())
-                    cout << "- Target reached at depth level: " << state << endl;
+                    cout << "- Target reached at depth level: " << treeLevel << endl;
                 return true;
             }
             else {
@@ -277,8 +283,6 @@ private:
                     cout << "- Target not reached, proceding to next level" << endl;
             }
         }
-
-        tried.shrink_to_fit();
 
         return found;
     }
