@@ -154,7 +154,28 @@ private:
         return empty;
     }
 
-    static int generateChildrens(const Policy& policy, map<string,vector<string>>& roleSet, vector<map<string, vector<string>>>& newTries) {
+    /***
+     * Remove equal states between tried and childStates from childStates
+     * @param tried
+     * @param childStates
+     */
+    static void removeEqualStates( const vector<map<string,vector<string>>>& tried, vector<map<string, vector<string>>>& childStates) {
+        for (const map<string,vector<string>> &state: tried) {
+            for (int i = 0; i < childStates.size() - 1; ++i) {
+                if(state == childStates.at(i))
+                    childStates.erase(childStates.begin() + i);
+            }
+        }
+    }
+
+    /***
+     * Generate some possible childStates from a roleSet and a Policy
+     * @param policy
+     * @param roleSet
+     * @param childStates
+     * @return
+     */
+    static int generateChildrens(const Policy& policy, map<string,vector<string>>& roleSet, vector<map<string, vector<string>>>& childStates) {
         int found = 0;
         //Check Can Assign Rules
         for (const CA& assign: policy.getCanAssign()) {
@@ -168,7 +189,7 @@ private:
                         if (!negativeConditionsCheck) {
                             map<string, vector<string>> assigment = assignUserRole(it.first, assign.getRoleTarget(), roleSet, policy.getGoal(), found);     //do a role assignment
                             if (!empty(assigment)) {
-                                newTries.push_back(assigment);
+                                childStates.push_back(assigment);
                             }
                         }
                     }
@@ -182,7 +203,7 @@ private:
                 for (const auto &it: roleSet) {
                     map<string, vector<string>> revocation = revokeUserRole(it.first, revoke.getRoleTarget(), roleSet);    //do a role revocation
                     if (!empty(revocation) && !Utility::isRoleSetEmpty(revocation)) {
-                        newTries.push_back(revocation);
+                        childStates.push_back(revocation);
                     }
                 }
             }
@@ -199,19 +220,56 @@ private:
         //build set of initial roles
         map<string, vector<string>> initialRoles = buildInitialRoles(policy);
         vector<map<string,vector<string>>> tried;   //set of all the tries
+        vector<map<string, vector<string>>> childStates;      //vector of sons
         tried.push_back(initialRoles);
-        int found = 0;
+        int state = 0;
+        int found = 0; // 0 = analyzing, 1 = reachable, -1 = not reachable
+        bool generated = true;
 
         while (found == 0){
             if(isShowLogs())
-                cout << "- Depth level: " << tried.size() << endl;
+                cout << "- Depth level: " << state << endl;
 
-            vector<map<string, vector<string>>> newTries;      //vector of childs
-            found = generateChildrens(policy, tried.at(tried.size() - 1), newTries);   //generate current node childs
+            if(generated) {     // the state is a new generated state
+                childStates.clear();
+                found = generateChildrens(policy, tried.at(state), childStates);   //generate current node sons
+                removeEqualStates(tried, childStates);
+                if(!childStates.empty()) {
+                    tried.push_back(childStates.at(0));
+                    state++;
+                }
+                else {
+                    state--;
+                    generated = false;
+                }
+            }
+            else {  // the state is a previous generated state
+                childStates.clear();
+                found = generateChildrens(policy, tried.at(state), childStates);   //generate current node sons
+                removeEqualStates(tried, childStates);
+                bool childFound = false;
+                for(int k=0; k < childStates.size() && !childFound; ++k) {
+                    if(childStates.at(k) == tried.at(tried.size() - 1)) { //search last analyzed state
+                        if(k < childStates.size() - 1) { //if found, remove it from tries and add his right sibling instead
+                            tried.pop_back();
+                            tried.push_back(childStates.at(k));
+                            generated = true;
+                            childFound = true;
+                        }
+                    }
+                }
+                if(!childFound) {   //if all sons are already been visited, do a step back
+                    state--;
+                    generated = false;
+                }
+
+                if(state == 0 && !generated && !childFound)     // if root state has no sons to visit, then stop
+                    found = -1;
+            }
 
             if(found > 0){
                 if(isShowLogs())
-                    cout << "- Target reached at depth level: " << tried.size() << endl;
+                    cout << "- Target reached at depth level: " << state << endl;
                 return true;
             }
             else {
