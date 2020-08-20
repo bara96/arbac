@@ -156,15 +156,14 @@ private:
     }
 
     /***
-     * Get new tries given a roleSet and a Policy
+     * Get new role set combinations given a roleSet and a Policy
      * @param policy
      * @param roleSet
      * @param newTries
      * @return
      */
-    static int getNewTries(const Policy& policy, map<string, vector<string>>& roleSet, vector<map<string, vector<string>>>& newTries) {
+    static int getNewCombinations(const Policy& policy, map<string, vector<string>>& roleSet, vector<map<string, vector<string>>>& newTries, bool& changes) {
         int found = 0;
-        bool changes = false;
 
         //Check Can Assign Rules
         for (const CA& assign: policy.getCanAssign()) {
@@ -201,9 +200,6 @@ private:
             }
         }
 
-        if(!changes)
-            found = -1;
-
         return found;
     }
 
@@ -224,9 +220,8 @@ private:
             if(isShowLogs())
                 cout << "- Iteration step n'" << i << endl;
             vector<map<string, vector<string>>> newTries;      //set of the current tries
-            for (map<string,vector<string>>& roleSet: tried) {
-                if(found == 0)
-                    found = getNewTries(policy, roleSet, newTries);
+            for(int k=0; k < tried.size() && found == 0; ++k) {
+                found = getNewCombinations(policy, tried.at(k), newTries, changes);
             }
 
             if(found > 0){
@@ -281,7 +276,7 @@ private:
                     isOnBuffer = true;
                     newTries.clear();
                 }
-            }
+            
 
             inputStream.close();
 
@@ -310,18 +305,19 @@ private:
         return found;
     }
 
+
 public:
     bool analyzePolicy() {
         //first step: backward slicing
         if(isShowLogs())
             cout << "ANALYZER BEGIN" << endl;
         if(isShowLogs())
-            cout << "1) backward slicing" << endl;
+            cout << "1) Backward slicing" << endl;
         PolicyAnalyzer::backwardSlicing(sourcePolicy);
 
         //second step: approximated analysis
         if(isShowLogs())
-            cout << "2) approximated analysis" << endl;
+            cout << "2) Approximated analysis" << endl;
         if(!PolicyAnalyzer::approximatedAnalysis(sourcePolicy)) {
             if(isShowLogs()) {
                 cout << "- approximated analysis succeeded" << endl;
