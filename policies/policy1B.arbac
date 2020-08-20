@@ -1,0 +1,12 @@
+Roles Agent Doctor Employee Nurse target Admin ;
+
+Users user0 user1 user2 user3 ;
+
+UA <user0,Admin> <user1,Doctor> <user2,Doctor> <user3,Employee> ;
+
+CR <Doctor,Employee>;
+
+CA <Admin,Employee,Nurse> <Doctor,TRUE,Doctor> <Agent,TRUE,target>;
+
+Goal target ;
+

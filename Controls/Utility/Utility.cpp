@@ -15,8 +15,9 @@ vector<string> Utility::split(const string& line, char delimiter) {
 }
 
 string Utility::findRole(const string& toFind, vector<string> roles){
-    if(roles.at(0) == "TRUE")
+    if(roles.at(0) == "TRUE" || toFind == "TRUE") {
         return "TRUE";
+    }
 
     auto it = find(roles.begin(), roles.end(), toFind);
     if (it == roles.end())
@@ -24,7 +25,7 @@ string Utility::findRole(const string& toFind, vector<string> roles){
 
     int index = distance(roles.begin(), it);
     return roles.at(index);
-};
+}
 
 vector<string> Utility::findUsersWithRole(const string& role, const map<string, vector<string>>& roleSet) {
     vector<string> users;
@@ -47,9 +48,10 @@ void Utility::printRoleSet(const map<string, vector<string>>& roleSet) {
 }
 
 bool Utility::everyCondition(const vector<string> &condRules, const vector<string>& roles) {
-    for (const string& condRule: condRules)
+    for (const string& condRule: condRules) {
         if (empty((Utility::findRole(condRule, roles))))
             return false;
+    }
     return true;
 }
 
@@ -58,28 +60,6 @@ bool Utility::someCondition(const vector<string> &condRules, const vector<string
         if (!empty((Utility::findRole(condRule, roles))))
             return true;
     return false;
-}
-
-map<string,vector<string>> Utility::assignUserRole(const string& user, const string& role, map<string, vector<string>> &roleSet) {
-    map<string,vector<string>> roleSetTemp(roleSet);
-    if (!empty(roleSetTemp.find(user)->second)) {
-        roleSetTemp.at(user).push_back(role);
-        return roleSetTemp;
-    }
-    map<string,vector<string>> empty;    //TODO consider to swap nullptr
-    return empty;
-}
-
-map<string,vector<string>> Utility::revokeUserRole(const string& user, const string& role, map<string, vector<string>> &roleSet) {
-    map<string,vector<string>> roleSetTemp(roleSet);
-    if (!empty(roleSetTemp.find(user)->second)) {
-        auto it = find(roleSetTemp.at(user).begin(), roleSetTemp.at(user).end(), role);
-        if (it != roleSetTemp.at(user).end()) {
-            roleSetTemp.at(user).erase(it);
-        }
-    }
-    map<string,vector<string>> empty;    //TODO consider to swap nullptr
-    return empty;
 }
 
 bool Utility::isRoleSetEmpty(const map<string, vector<string>> &roleSet) {
