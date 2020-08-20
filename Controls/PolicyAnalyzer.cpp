@@ -119,12 +119,12 @@ private:
     * @param roleSet : origin roleSet
     * @return
     */
-    static map<string,vector<string>> assignUserRole(const string& user, const string& role, map<string, vector<string>> &roleSet, const string& roleGoal, int &found) {
+    static map<string,vector<string>> assignUserRole(const string& user, const string& role, map<string, vector<string>> &roleSet, const string& roleGoal, bool &found) {
         map<string,vector<string>> roleSetTemp(roleSet);
         if (!empty(roleSetTemp.find(user)->second)) {
             roleSetTemp.at(user).push_back(role);
             if(role == roleGoal)
-                found = 1;
+                found = true;
             return roleSetTemp;
         }
         else
@@ -164,15 +164,18 @@ private:
         map<string, vector<string>> initialRoles = buildInitialRoles(policy);
         vector<map<string,vector<string>>> tried;   //set of all the tries
         tried.push_back(initialRoles);
-        int found = 0;
+        bool found = false;
         int i = 1;
 
-        while (found == 0){
+        while (true){
             bool changes = false;
             if(isShowLogs())
                 cout << "- Iteration step n'" << i << endl;
             vector<map<string, vector<string>>> newTries;      //set of the current tries
+
             for (map<string,vector<string>>& roleSet: tried) {
+
+
                 //Check Can Assign Rules
                 for (const CA& assign: policy.getCanAssign()) {
                     vector<string> admins = Utility::findUsersWithRole(assign.getRoleAdmin(), roleSet);
@@ -184,6 +187,11 @@ private:
                                 bool negativeConditionsCheck = Utility::someCondition(assign.getNegativeConditions(), targetUserRoles);     //check if it respect negative conditions
                                 if (!negativeConditionsCheck) {
                                     map<string, vector<string>> assigment = assignUserRole(it.first, assign.getRoleTarget(), roleSet, policy.getGoal(), found);     //do a role assignment
+                                    if(found){
+                                        if(isShowLogs())
+                                            cout << "- Target reached at iteration step n'" << i << endl;
+                                        return true;
+                                    }
                                     if (!empty(assigment)) {
                                         newTries.push_back(assigment);
                                         changes = true;
@@ -193,6 +201,8 @@ private:
                         }
                     }
                 }
+
+
 
                 //Check Can Revoke Rules
                 for (const CR &revoke: policy.getCanRevoke()) {
@@ -209,15 +219,11 @@ private:
                 }
             }
 
-            if(found > 0){
-                if(isShowLogs())
-                    cout << "- Target reached at iteration step n'" << i << endl;
-                return true;
-            }
-            else {
-                if(!changes)
-                    return false;
-                if(isShowLogs())
+
+
+            if(!changes) {
+                return false;
+                if (isShowLogs())
                     cout << "- Target not reached, proceding to next iteration step" << endl;
             }
 
