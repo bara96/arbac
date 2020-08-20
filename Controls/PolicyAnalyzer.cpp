@@ -247,7 +247,7 @@ private:
     }
 
     /***
-     * Check if store the vector on buffer
+     * Check if store the vector on buffer TODO fix buffer save
      * @param cache
      * @param newTries
      * @param isOnBuffer
@@ -300,7 +300,13 @@ private:
                                     if (!empty(assigment)) {
                                         newTries.push_back(assigment);
                                         changes = true;
-                                        checkBuffer(cache, newTries, isOnBuffer);
+                                        if (newTries.size() >= 100000) {
+                                            for (const auto &set : newTries) {
+                                                cache.storeSet(set, cache.Source::BUFFER);
+                                            }
+                                            isOnBuffer = true;
+                                            newTries.clear();
+                                        }
                                     }
                                 }
                             }
@@ -317,7 +323,13 @@ private:
                             if (!empty(revocation) && !Utility::isRoleSetEmpty(revocation)) {
                                 newTries.push_back(revocation);
                                 changes = true;
-                                checkBuffer(cache, newTries, isOnBuffer);
+                                if (newTries.size() >= 100000) {
+                                    for (const auto &set : newTries) {
+                                        cache.storeSet(set, cache.Source::BUFFER);
+                                    }
+                                    isOnBuffer = true;
+                                    newTries.clear();
+                                }
                             }
                         }
                     }
