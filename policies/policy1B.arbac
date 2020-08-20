@@ -1,12 +1,12 @@
-Roles Agent Doctor Employee Nurse target Admin ;
+Roles Admin Agent Doctor Employee target ;
 
-Users user0 user1 user2 user3 ;
+Users user0 user1 user2 user3 user4;
 
-UA <user0,Admin> <user1,Doctor> <user2,Doctor> <user3,Employee> ;
+UA <user0,Admin> <user1,Doctor> <user2,Doctor> <user3,Employee> <user4,Employee>;
 
-CR <Doctor,Employee>;
+CR <Doctor,Employee> <Admin,Doctor> <Admin,Doctor>;
 
-CA <Admin,Employee,Nurse> <Doctor,TRUE,Doctor> <Agent,TRUE,target>;
+CA <Admin,Employee,Nurse> <Admin,Employee,Doctor> <Doctor,TRUE,Employee> <Doctor,Admin&Agent,Agent> <Agent,TRUE,target>;
 
 Goal target ;
 
