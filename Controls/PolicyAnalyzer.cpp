@@ -216,7 +216,8 @@ private:
         int found = 0;
         int i = 1;
 
-        while (found == 0){
+        while (found == 0) {
+            bool changes = false;
             if(isShowLogs())
                 cout << "- Iteration step n'" << i << endl;
             vector<map<string, vector<string>>> newTries;      //set of the current tries
@@ -230,6 +231,8 @@ private:
                 return true;
             }
             else {
+                if(!changes)
+                    return false;
                 if(isShowLogs())
                     cout << "- Target not reached, proceding to next iteration step" << endl;
             }
@@ -240,7 +243,7 @@ private:
 
         tried.shrink_to_fit();
 
-        return found;
+        return found == 1;
     }
 
     /***
@@ -256,8 +259,9 @@ private:
         Cache cache = Cache();
         cache.storeSet(initialRoles);
 
-        while (found == 0){
-            if(isShowLogs())
+        while (found == 0) {
+            bool changes = false;
+            if (isShowLogs())
                 cout << "- Iteration step n'" << i << endl;
 
             vector<map<string, vector<string>>> newTries;      //set of the current tries
@@ -266,43 +270,43 @@ private:
             while (inputStream.peek() != EOF) {
                 map<string, vector<string>> roleSet = cache.readSet<string>(inputStream);
                 //Check Can Assign Rules
-                if(found == 0)
-                    found = getNewTries(policy, roleSet, newTries);
+                if (found == 0)
+                    found = getNewCombinations(policy, roleSet, newTries, changes);
 
-                if(newTries.size() >= 100000) {
-                    for(const auto& set : newTries) {
+                if (newTries.size() >= 100000) {
+                    for (const auto &set : newTries) {
                         cache.storeSet(set, cache.Source::BUFFER);
                     }
                     isOnBuffer = true;
                     newTries.clear();
                 }
-            
+            }
 
             inputStream.close();
 
-            if(found > 0){
-                if(isShowLogs())
+            if (found > 0) {
+                if (isShowLogs())
                     cout << "- Target reached at iteration step n'" << i << endl;
                 return true;
-            }
-            else {
-                if(isShowLogs())
+            } else {
+                if(!changes)
+                    return false;
+                if (isShowLogs())
                     cout << "- Target not reached, proceding to next iteration step" << endl;
             }
 
-            if(isOnBuffer) {
+            if (isOnBuffer) {
                 cache.copyBufferOnCache();
                 isOnBuffer = false;
             }
-            for(const auto& set : newTries) {
+            for (const auto &set : newTries) {
                 cache.storeSet(set);
             }
             newTries.clear();
 
             ++i;
         }
-
-        return found;
+        return found == 1;
     }
 
 
