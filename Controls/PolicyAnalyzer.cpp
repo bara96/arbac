@@ -156,11 +156,104 @@ private:
     }
 
     /***
+     * Get new tries given a roleSet and a Policy
+     * @param policy
+     * @param roleSet
+     * @param newTries
+     * @return
+     */
+    static int getNewTries(const Policy& policy, map<string, vector<string>>& roleSet, vector<map<string, vector<string>>>& newTries) {
+        int found = 0;
+        bool changes = false;
+
+        //Check Can Assign Rules
+        for (const CA& assign: policy.getCanAssign()) {
+            vector<string> admins = Utility::findUsersWithRole(assign.getRoleAdmin(), roleSet);
+            if (!empty(admins)) {
+                for (const auto &it: roleSet) {
+                    vector<string> targetUserRoles = it.second;
+                    bool positiveConditionsCheck = Utility::everyCondition(assign.getPositiveConditions(), targetUserRoles);    //check if it respect positive conditions
+                    if (positiveConditionsCheck) {
+                        bool negativeConditionsCheck = Utility::someCondition(assign.getNegativeConditions(), targetUserRoles);     //check if it respect negative conditions
+                        if (!negativeConditionsCheck) {
+                            map<string, vector<string>> assigment = assignUserRole(it.first, assign.getRoleTarget(), roleSet, policy.getGoal(), found);     //do a role assignment
+                            if (!empty(assigment)) {
+                                newTries.push_back(assigment);
+                                changes = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        //Check Can Revoke Rules
+        for (const CR &revoke: policy.getCanRevoke()) {
+            vector<string> admins = Utility::findUsersWithRole(revoke.getRoleAdmin(), roleSet);
+            if (!empty(admins)) {
+                for (const auto &it: roleSet) {
+                    map<string, vector<string>> revocation = revokeUserRole(it.first, revoke.getRoleTarget(), roleSet);    //do a role revocation
+                    if (!empty(revocation) && !Utility::isRoleSetEmpty(revocation)) {
+                        newTries.push_back(revocation);
+                        changes = true;
+                    }
+                }
+            }
+        }
+
+        if(!changes)
+            found = -1;
+
+        return found;
+    }
+
+    /***
      * Try all the possible combinations
      * @param policy : the source Policy
      * @return
      */
     bool bruteForce(const Policy& policy) const{
+        //build set of initial roles
+        map<string, vector<string>> initialRoles = buildInitialRoles(policy);
+        vector<map<string,vector<string>>> tried;   //set of all the tries
+        tried.push_back(initialRoles);
+        int found = 0;
+        int i = 1;
+
+        while (found == 0){
+            if(isShowLogs())
+                cout << "- Iteration step n'" << i << endl;
+            vector<map<string, vector<string>>> newTries;      //set of the current tries
+            for (map<string,vector<string>>& roleSet: tried) {
+                if(found == 0)
+                    found = getNewTries(policy, roleSet, newTries);
+            }
+
+            if(found > 0){
+                if(isShowLogs())
+                    cout << "- Target reached at iteration step n'" << i << endl;
+                return true;
+            }
+            else {
+                if(isShowLogs())
+                    cout << "- Target not reached, proceding to next iteration step" << endl;
+            }
+
+            tried.insert(tried.end(), newTries.begin(), newTries.end());    //add mew tries to the tried set
+            ++i;
+        }
+
+        tried.shrink_to_fit();
+
+        return found;
+    }
+
+    /***
+     * Try all the possible combinations
+     * @param policy : the source Policy
+     * @return
+     */
+    bool bruteForceCache(const Policy& policy) const{
         int found = 0;
         int i = 1;
         bool isOnBuffer = false;
@@ -169,7 +262,6 @@ private:
         cache.storeSet(initialRoles);
 
         while (found == 0){
-            bool changes = false;
             if(isShowLogs())
                 cout << "- Iteration step n'" << i << endl;
 
@@ -179,39 +271,8 @@ private:
             while (inputStream.peek() != EOF) {
                 map<string, vector<string>> roleSet = cache.readSet<string>(inputStream);
                 //Check Can Assign Rules
-                for (const CA& assign: policy.getCanAssign()) {
-                    vector<string> admins = Utility::findUsersWithRole(assign.getRoleAdmin(), roleSet);
-                    if (!empty(admins)) {
-                        for (const auto &it: roleSet) {
-                            vector<string> targetUserRoles = it.second;
-                            bool positiveConditionsCheck = Utility::everyCondition(assign.getPositiveConditions(), targetUserRoles);    //check if it respect positive conditions
-                            if (positiveConditionsCheck) {
-                                bool negativeConditionsCheck = Utility::someCondition(assign.getNegativeConditions(), targetUserRoles);     //check if it respect negative conditions
-                                if (!negativeConditionsCheck) {
-                                    map<string, vector<string>> assigment = assignUserRole(it.first, assign.getRoleTarget(), roleSet, policy.getGoal(), found);     //do a role assignment
-                                    if (!empty(assigment)) {
-                                        newTries.push_back(assigment);
-                                        changes = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                //Check Can Revoke Rules
-                for (const CR &revoke: policy.getCanRevoke()) {
-                    vector<string> admins = Utility::findUsersWithRole(revoke.getRoleAdmin(), roleSet);
-                    if (!empty(admins)) {
-                        for (const auto &it: roleSet) {
-                            map<string, vector<string>> revocation = revokeUserRole(it.first, revoke.getRoleTarget(), roleSet);    //do a role revocation
-                            if (!empty(revocation) && !Utility::isRoleSetEmpty(revocation)) {
-                                newTries.push_back(revocation);
-                                changes = true;
-                            }
-                        }
-                    }
-                }
+                if(found == 0)
+                    found = getNewTries(policy, roleSet, newTries);
 
                 if(newTries.size() >= 100000) {
                     for(const auto& set : newTries) {
@@ -230,8 +291,6 @@ private:
                 return true;
             }
             else {
-                if(!changes)
-                    return false;
                 if(isShowLogs())
                     cout << "- Target not reached, proceding to next iteration step" << endl;
             }
@@ -278,22 +337,9 @@ public:
         //third step: brute force
         if(isShowLogs())
             cout << "3) Evaluation" << endl;
-        bool result = bruteForce(sourcePolicy);
+        bool result = bruteForceCache(sourcePolicy);
         if(isShowLogs())
             cout << "ANALYZER END" << endl;
         return result;
-    }
-
-    void test() {
-        map<string, vector<string>> initialRoles = buildInitialRoles(sourcePolicy);
-        Cache cache = Cache();
-        cache.storeSet(initialRoles);
-        ifstream inputStream;
-        inputStream.open(cache.getFilename());
-        while (inputStream.peek() != EOF) {
-            map<string, vector<string>> set = cache.readSet<string>(inputStream);
-            Utility::printRoleSet(set);
-        }
-        inputStream.close();
     }
 };
