@@ -5,7 +5,7 @@ using namespace std;
 
 int main() {
     bool showLogs = true;
-    string filename = "../policies/policy2.arbac";
+    string filename = "../policies/policy1.arbac";
     Policy policy;
     try {
         Parser parser = Parser(filename, showLogs);

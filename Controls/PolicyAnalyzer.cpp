@@ -120,13 +120,19 @@ private:
     * @param roleSet : origin roleSet
     * @return
     */
-    static map<string,vector<string>> assignUserRole(const string& user, const string& role, map<string, vector<string>> &roleSet, const string& roleGoal, int &found) {
+    static map<string,vector<string>> assignUserRole(const string& user, const vector<string>& userRoles, const string& role, map<string, vector<string>> &roleSet, const string& roleGoal, const CA& assign, int &found) {
         map<string,vector<string>> roleSetTemp(roleSet);
-        if (!empty(roleSetTemp.find(user)->second)) {
-            roleSetTemp.at(user).push_back(role);
-            if(role == roleGoal)
-                found = 1;
-            return roleSetTemp;
+        if (!empty(userRoles)) {
+            bool positiveConditionsCheck = Utility::everyCondition(assign.getPositiveConditions(), userRoles);    //check if it respect positive conditions
+            if (positiveConditionsCheck) {
+                bool negativeConditionsCheck = Utility::someCondition(assign.getNegativeConditions(), userRoles);     //check if it respect negative conditions
+                if (!negativeConditionsCheck) {
+                        roleSetTemp.at(user).push_back(role);
+                        if (role == roleGoal)
+                            found = 1;
+                        return roleSetTemp;
+                }
+            }
         }
         else
             roleSetTemp.clear();
@@ -156,52 +162,22 @@ private:
     }
 
     /***
-     * Get new role set combinations given a roleSet and a Policy
-     * @param policy
-     * @param roleSet
+     * Check if store the vector on buffer TODO fix buffer save
+     * @param cache
      * @param newTries
+     * @param isOnBuffer
      * @return
      */
-    static int getNewCombinations(const Policy& policy, map<string, vector<string>>& roleSet, vector<map<string, vector<string>>>& newTries, bool& changes) {
-        int found = 0;
-
-        //Check Can Assign Rules
-        for (const CA& assign: policy.getCanAssign()) {
-            vector<string> admins = Utility::findUsersWithRole(assign.getRoleAdmin(), roleSet);
-            if (!empty(admins)) {
-                for (const auto &it: roleSet) {
-                    vector<string> targetUserRoles = it.second;
-                    bool positiveConditionsCheck = Utility::everyCondition(assign.getPositiveConditions(), targetUserRoles);    //check if it respect positive conditions
-                    if (positiveConditionsCheck) {
-                        bool negativeConditionsCheck = Utility::someCondition(assign.getNegativeConditions(), targetUserRoles);     //check if it respect negative conditions
-                        if (!negativeConditionsCheck) {
-                            map<string, vector<string>> assigment = assignUserRole(it.first, assign.getRoleTarget(), roleSet, policy.getGoal(), found);     //do a role assignment
-                            if (!empty(assigment)) {
-                                newTries.push_back(assigment);
-                                changes = true;
-                            }
-                        }
-                    }
-                }
+    static void checkBuffer(Cache& cache, vector<map<string, vector<string>>>& newTries, bool& isOnBuffer) {
+        if (newTries.size() >= 200000) {
+            for (const auto &set : newTries) {
+                cache.storeSet(set, cache.Source::BUFFER);
             }
+            isOnBuffer = true;
+            newTries.clear();
         }
-
-        //Check Can Revoke Rules
-        for (const CR &revoke: policy.getCanRevoke()) {
-            vector<string> admins = Utility::findUsersWithRole(revoke.getRoleAdmin(), roleSet);
-            if (!empty(admins)) {
-                for (const auto &it: roleSet) {
-                    map<string, vector<string>> revocation = revokeUserRole(it.first, revoke.getRoleTarget(), roleSet);    //do a role revocation
-                    if (!empty(revocation) && !Utility::isRoleSetEmpty(revocation)) {
-                        newTries.push_back(revocation);
-                        changes = true;
-                    }
-                }
-            }
-        }
-
-        return found;
     }
+
 
     /***
      * Try all the possible combinations
@@ -222,7 +198,33 @@ private:
                 cout << "- Iteration step n'" << i << endl;
             vector<map<string, vector<string>>> newTries;      //set of the current tries
             for(int k=0; k < tried.size() && found == 0; ++k) {
-                found = getNewCombinations(policy, tried.at(k), newTries, changes);
+                //Check Can Assign Rules
+                for (const CA& assign: policy.getCanAssign()) {
+                    vector<string> admins = Utility::findUsersWithRole(assign.getRoleAdmin(), tried.at(k));
+                    if (!empty(admins)) {
+                        for (const auto &it: tried.at(k)) {
+                            map<string, vector<string>> assignment = assignUserRole(it.first, it.second, assign.getRoleTarget(), tried.at(k), policy.getGoal(), assign, found);     //do a role assignment
+                            if(!assignment.empty()) {
+                                newTries.push_back(assignment);
+                                changes = true;
+                            }
+                        }
+                    }
+                }
+
+                //Check Can Revoke Rules
+                for (const CR &revoke: policy.getCanRevoke()) {
+                    vector<string> admins = Utility::findUsersWithRole(revoke.getRoleAdmin(), tried.at(k));
+                    if (!empty(admins)) {
+                        for (const auto &it: tried.at(k)) {
+                            map<string, vector<string>> revocation = revokeUserRole(it.first, revoke.getRoleTarget(), tried.at(k));    //do a role revocation
+                            if (!empty(revocation) && !Utility::isRoleSetEmpty(revocation)) {
+                                newTries.push_back(revocation);
+                                changes = true;
+                            }
+                        }
+                    }
+                }
             }
 
             if(found > 0){
@@ -244,23 +246,6 @@ private:
         tried.shrink_to_fit();
 
         return found == 1;
-    }
-
-    /***
-     * Check if store the vector on buffer TODO fix buffer save
-     * @param cache
-     * @param newTries
-     * @param isOnBuffer
-     * @return
-     */
-    static void checkBuffer(Cache cache, vector<map<string, vector<string>>> newTries, bool& isOnBuffer) {
-        if (newTries.size() >= 100000) {
-            for (const auto &set : newTries) {
-                cache.storeSet(set, cache.Source::BUFFER);
-            }
-            isOnBuffer = true;
-            newTries.clear();
-        }
     }
 
     /***
@@ -291,24 +276,12 @@ private:
                     vector<string> admins = Utility::findUsersWithRole(assign.getRoleAdmin(), roleSet);
                     if (!empty(admins)) {
                         for (const auto &it: roleSet) {
-                            vector<string> targetUserRoles = it.second;
-                            bool positiveConditionsCheck = Utility::everyCondition(assign.getPositiveConditions(), targetUserRoles);    //check if it respect positive conditions
-                            if (positiveConditionsCheck) {
-                                bool negativeConditionsCheck = Utility::someCondition(assign.getNegativeConditions(), targetUserRoles);     //check if it respect negative conditions
-                                if (!negativeConditionsCheck) {
-                                    map<string, vector<string>> assigment = assignUserRole(it.first, assign.getRoleTarget(), roleSet, policy.getGoal(), found);     //do a role assignment
-                                    if (!empty(assigment)) {
-                                        newTries.push_back(assigment);
-                                        changes = true;
-                                        if (newTries.size() >= 100000) {
-                                            for (const auto &set : newTries) {
-                                                cache.storeSet(set, cache.Source::BUFFER);
-                                            }
-                                            isOnBuffer = true;
-                                            newTries.clear();
-                                        }
-                                    }
-                                }
+                            map<string, vector<string>> assignment = assignUserRole(it.first, it.second, assign.getRoleTarget(), roleSet, policy.getGoal(), assign, found);     //do a role assignment
+                            if(!assignment.empty()) {
+                                newTries.push_back(assignment);
+                                changes = true;
+                                checkBuffer(cache, newTries, isOnBuffer);
+
                             }
                         }
                     }
@@ -323,13 +296,7 @@ private:
                             if (!empty(revocation) && !Utility::isRoleSetEmpty(revocation)) {
                                 newTries.push_back(revocation);
                                 changes = true;
-                                if (newTries.size() >= 100000) {
-                                    for (const auto &set : newTries) {
-                                        cache.storeSet(set, cache.Source::BUFFER);
-                                    }
-                                    isOnBuffer = true;
-                                    newTries.clear();
-                                }
+                                checkBuffer(cache, newTries, isOnBuffer);
                             }
                         }
                     }
