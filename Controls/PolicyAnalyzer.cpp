@@ -330,9 +330,8 @@ private:
         return found == 1;
     }
 
-
 public:
-    bool analyzePolicy() {
+    bool analyzePolicy(bool enableCache = true) {
         //first step: backward slicing
         if(isShowLogs())
             cout << "ANALYZER BEGIN" << endl;
@@ -358,7 +357,11 @@ public:
         //third step: brute force
         if(isShowLogs())
             cout << "3) Evaluation" << endl;
-        bool result = bruteForceCache(sourcePolicy);
+        bool result = false;
+        if(enableCache)
+            result = bruteForceCache(sourcePolicy);
+        else
+            result = bruteForce(sourcePolicy);
         if(isShowLogs())
             cout << "ANALYZER END" << endl;
         return result;
